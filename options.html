@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LLM Helper Options</title>
+  <style>
+    body {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    textarea {
+      height: 100px;
+      font-family: monospace;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .hint {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+    }
+    .provider-settings {
+      margin-left: 20px;
+      padding: 10px;
+      border-left: 2px solid #eee;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Options</h2>
+    <div class="form-group">
+      <label for="aiProvider">AI Provider:</label>
+      <select id="aiProvider">
+        <option value="openai">OpenAI</option>
+      </select>
+    </div>
+
+    <!-- OpenAI specific settings -->
+    <div id="openaiSettings" class="provider-settings">
+      <div class="form-group">
+        <label for="apiKey">OpenAI API Key:</label>
+        <input type="text" id="apiKey" placeholder="Enter your OpenAI API key">
+      </div>
+      <div class="form-group">
+        <label for="model">Model:</label>
+        <select id="model">
+          <option value="gpt-4">GPT-4</option>
+          <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16K</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="language">Default Language:</label>
+      <select id="language">
+        <option value="English">English</option>
+        <option value="Spanish">Spanish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+        <option value="Chinese">Chinese</option>
+        <option value="Japanese">Japanese</option>
+        <option value="Korean">Korean</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="systemMessage">System Message:</label>
+      <textarea id="systemMessage" placeholder="You are a helpful assistant..."></textarea>
+      <div class="hint">Define the AI's role and behavior</div>
+    </div>
+
+    <div class="form-group">
+      <label for="userPrompt">User Prompt Template:</label>
+      <textarea id="userPrompt"></textarea>
+      <div class="hint">Available placeholders: {{content}}, {{url}}, {{title}}, {{selected_language}}</div>
+    </div>
+
+    <div class="form-group">
+      <label for="maxTokens">Max Response Tokens:</label>
+      <input type="number" id="maxTokens" value="150" min="1" max="4000">
+    </div>
+
+    <button id="save">Save</button>
+    <div id="status"></div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html> 

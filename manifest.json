@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "LLM Helper",
+  "version": "1.0",
+  "description": "Summarize web pages using LLM",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+} 
