@@ -1,17 +1,23 @@
-function createPopup() {
-  if (document.getElementById('llm-helper-popup')) {
-    return;
-  }
+function createPopup(selectedText = null) {
+  // Remove existing popup or sidebar if any
+  const existingPopup = document.getElementById('llm-helper-popup');
+  const existingSidebar = document.getElementById('llm-helper-sidebar');
+  if (existingPopup) existingPopup.remove();
+  if (existingSidebar) existingSidebar.remove();
 
   const popup = document.createElement('div');
   popup.id = 'llm-helper-popup';
   popup.innerHTML = `
     <div class="titlebar">
       <span>LLM Helper</span>
-      <select id="displayMode">
-        <option value="popup">Popup</option>
-        <option value="sidebar">Sidebar</option>
-      </select>
+      <div class="actions">
+        <button class="icon-button" id="retry" title="Retry">🔄</button>
+        <button class="icon-button" id="copy" title="Copy">📋</button>
+        <select id="displayMode">
+          <option value="popup">Popup</option>
+          <option value="sidebar">Sidebar</option>
+        </select>
+      </div>
     </div>
     <button id="summarize">Summarize Page</button>
     <div id="summary"></div>
@@ -25,6 +31,16 @@ function createPopup() {
   popup.style.width = '300px';
   
   document.body.appendChild(popup);
+
+  // Handle display mode changes
+  const displayModeSelect = popup.querySelector('#displayMode');
+  displayModeSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'sidebar') {
+      const selectedText = popup.querySelector('#summary').dataset.selectedText;
+      createSidebar(selectedText);
+      popup.remove();
+    }
+  });
 
   // Dragging functionality
   const titlebar = popup.querySelector('.titlebar');
@@ -146,7 +162,7 @@ function createPopup() {
         }
 
         const pageContent = {
-          content: document.body.innerText.substring(0, 4000),
+          content: selectedText || document.body.innerText.substring(0, 4000),
           title: document.title,
           url: window.location.href
         };
@@ -184,6 +200,8 @@ function createPopup() {
           if (data.error) {
             throw new Error(data.error.message);
           }
+          // Store the raw markdown
+          summaryDiv.dataset.markdown = data.choices[0].message.content;
           // Render markdown content
           summaryDiv.innerHTML = marked.parse(data.choices[0].message.content, {
             gfm: true,
@@ -196,7 +214,205 @@ function createPopup() {
       }
     );
   });
+
+  // Add button handlers
+  const retryButton = popup.querySelector('#retry');
+  const copyButton = popup.querySelector('#copy');
+  const summaryDiv = popup.querySelector('#summary');
+
+  retryButton.addEventListener('click', async () => {
+    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
+      summarizeBtn.click(); // Reuse the existing summarize functionality
+    }
+  });
+
+  copyButton.addEventListener('click', async () => {
+    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
+      try {
+        // Copy the raw markdown if available, otherwise fall back to rendered text
+        const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
+        await navigator.clipboard.writeText(textToCopy);
+        // Optional: Show a brief success message
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '✓';
+        setTimeout(() => {
+          copyButton.innerHTML = originalText;
+        }, 1000);
+      } catch (err) {
+        console.error('Failed to copy text:', err);
+      }
+    }
+  });
+
+  // Store the selected text for mode switching
+  summaryDiv.dataset.selectedText = selectedText || '';
+}
+
+function createSidebar(selectedText = null) {
+  const sidebar = document.createElement('div');
+  sidebar.id = 'llm-helper-sidebar';
+  sidebar.innerHTML = `
+    <div class="titlebar">
+      <span>LLM Helper</span>
+      <div class="actions">
+        <button class="icon-button" id="retry" title="Retry">🔄</button>
+        <button class="icon-button" id="copy" title="Copy">📋</button>
+        <select id="displayMode">
+          <option value="sidebar">Sidebar</option>
+          <option value="popup">Popup</option>
+        </select>
+      </div>
+    </div>
+    <button id="summarize">Summarize Page</button>
+    <div id="summary"></div>
+  `;
+
+  document.body.appendChild(sidebar);
+
+  // Add toggle button
+  const toggle = document.createElement('button');
+  toggle.id = 'llm-helper-toggle';
+  toggle.innerHTML = '◀';
+  toggle.onclick = () => {
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    chrome.storage.sync.get(['adjustWebpage'], function(data) {
+      if (data.adjustWebpage ?? true) { // Default to true if not set
+        document.body.classList.toggle('with-sidebar-collapsed');
+      }
+    });
+    toggle.innerHTML = isCollapsed ? '▶' : '◀';
+  };
+  document.body.appendChild(toggle);
+
+  // Add margin to webpage
+  chrome.storage.sync.get(['adjustWebpage'], function(data) {
+    if (data.adjustWebpage ?? true) { // Default to true if not set
+      document.body.classList.add('with-sidebar');
+    }
+  });
+
+  // Handle display mode changes
+  const displayModeSelect = sidebar.querySelector('#displayMode');
+  displayModeSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'popup') {
+      const selectedText = sidebar.querySelector('#summary').dataset.selectedText;
+      createPopup(selectedText);
+      sidebar.remove();
+      toggle.remove();
+      // Remove margin from webpage
+      document.body.classList.remove('with-sidebar');
+      document.body.classList.remove('with-sidebar-collapsed');
+    }
+  });
+
+  // Handle summarize button click
+  const summarizeBtn = sidebar.querySelector('#summarize');
+  summarizeBtn.addEventListener('click', async () => {
+    const summaryDiv = sidebar.querySelector('#summary');
+    summaryDiv.textContent = 'Summarizing...';
+
+    // Get settings from storage
+    chrome.storage.sync.get(
+      ['apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
+      async function(settings) {
+        if (!settings.apiKey) {
+          summaryDiv.textContent = 'Please set your API key in the options page.';
+          return;
+        }
+
+        const pageContent = {
+          content: selectedText || document.body.innerText.substring(0, 4000),
+          title: document.title,
+          url: window.location.href
+        };
+
+        const processedPrompt = settings.userPrompt
+          .replace('{{content}}', pageContent.content)
+          .replace('{{url}}', pageContent.url)
+          .replace('{{title}}', pageContent.title)
+          .replace('{{selected_language}}', settings.language);
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${settings.apiKey}`
+            },
+            body: JSON.stringify({
+              model: settings.model,
+              messages: [
+                {
+                  role: "system",
+                  content: settings.systemMessage
+                },
+                {
+                  role: "user",
+                  content: processedPrompt
+                }
+              ],
+              max_tokens: settings.maxTokens
+            })
+          });
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error.message);
+          }
+          summaryDiv.innerHTML = marked.parse(data.choices[0].message.content, {
+            gfm: true,
+            breaks: true,
+            sanitize: true
+          });
+        } catch (error) {
+          summaryDiv.textContent = `Error: ${error.message}`;
+        }
+      }
+    );
+  });
+
+  // Add button handlers
+  const retryButton = sidebar.querySelector('#retry');
+  const copyButton = sidebar.querySelector('#copy');
+  const summaryDiv = sidebar.querySelector('#summary');
+
+  retryButton.addEventListener('click', async () => {
+    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
+      summarizeBtn.click(); // Reuse the existing summarize functionality
+    }
+  });
+
+  copyButton.addEventListener('click', async () => {
+    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
+      try {
+        // Copy the raw markdown if available, otherwise fall back to rendered text
+        const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
+        await navigator.clipboard.writeText(textToCopy);
+        // Optional: Show a brief success message
+        const originalText = copyButton.innerHTML;
+        copyButton.innerHTML = '✓';
+        setTimeout(() => {
+          copyButton.innerHTML = originalText;
+        }, 1000);
+      } catch (err) {
+        console.error('Failed to copy text:', err);
+      }
+    }
+  });
+
+  // Store the selected text for mode switching
+  summaryDiv.dataset.selectedText = selectedText || '';
 }
 
 // Only listen for the create event
-document.addEventListener('create-llm-popup', createPopup); 
+document.addEventListener('create-llm-popup', (event) => {
+  const selectedText = event.detail?.selectedText;
+  createPopup(selectedText);
+  // Auto-trigger summarize if we have selected text
+  if (selectedText) {
+    const popup = document.getElementById('llm-helper-popup');
+    if (popup) {
+      popup.querySelector('#summarize').click();
+    }
+  }
+}); 

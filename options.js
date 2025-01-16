@@ -4,7 +4,8 @@ const DEFAULT_SETTINGS = {
   userPrompt: "Please analyze and summarize the following content from {{url}} in {{selected_language}}:\n\n{{content}}",
   model: "gpt-3.5-turbo",
   maxTokens: 150,
-  language: "English"
+  language: "English",
+  adjustWebpage: true
 };
 
 const PROVIDER_CONFIGS = {
@@ -19,7 +20,7 @@ const PROVIDER_CONFIGS = {
 document.addEventListener('DOMContentLoaded', function() {
   // Load saved settings
   chrome.storage.sync.get(
-    ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'], 
+    ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language', 'adjustWebpage'], 
     function(data) {
       const provider = data.aiProvider || DEFAULT_SETTINGS.aiProvider;
       document.getElementById('aiProvider').value = provider;
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('model').value = data.model || DEFAULT_SETTINGS.model;
       document.getElementById('maxTokens').value = data.maxTokens || DEFAULT_SETTINGS.maxTokens;
       document.getElementById('language').value = data.language || DEFAULT_SETTINGS.language;
+      document.getElementById('adjustWebpage').checked = data.adjustWebpage ?? DEFAULT_SETTINGS.adjustWebpage;
 
       updateProviderSettings(provider);
     }
@@ -51,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
       userPrompt: document.getElementById('userPrompt').value,
       model: document.getElementById('model').value,
       maxTokens: parseInt(document.getElementById('maxTokens').value),
-      language: document.getElementById('language').value
+      language: document.getElementById('language').value,
+      adjustWebpage: document.getElementById('adjustWebpage').checked
     };
 
     chrome.storage.sync.set(settings, function() {

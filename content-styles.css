@@ -97,4 +97,142 @@
   height: 20px;
   cursor: se-resize;
   background: linear-gradient(135deg, transparent 50%, #ccc 50%);
+}
+
+#llm-helper-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+  z-index: 2147483647;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+  transition: transform 0.3s ease;
+}
+
+/* Add transition for smooth webpage adjustment */
+body.with-sidebar {
+  margin-right: 300px !important;
+  transition: margin-right 0.3s ease;
+}
+
+body.with-sidebar-collapsed {
+  margin-right: 0 !important;
+}
+
+#llm-helper-sidebar.collapsed {
+  transform: translateX(100%);
+}
+
+#llm-helper-toggle {
+  position: fixed;
+  top: 50%;
+  right: 300px;
+  transform: translateY(-50%);
+  z-index: 2147483647;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-right: none;
+  cursor: pointer;
+  transition: right 0.3s ease;
+}
+
+#llm-helper-sidebar.collapsed + #llm-helper-toggle {
+  right: 0;
+}
+
+#llm-helper-sidebar #summary {
+  min-height: 100px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  margin-top: 10px;
+  padding-right: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.4;
+}
+
+#llm-helper-sidebar #summary h1,
+#llm-helper-sidebar #summary h2,
+#llm-helper-sidebar #summary h3,
+#llm-helper-sidebar #summary h4 {
+  margin-top: 0.7em;
+  margin-bottom: 0.3em;
+  font-weight: 600;
+}
+
+#llm-helper-sidebar #summary p {
+  margin: 0.3em 0;
+}
+
+#llm-helper-sidebar #summary ul,
+#llm-helper-sidebar #summary ol {
+  margin: 0.3em 0;
+  padding-left: 2em;
+}
+
+#llm-helper-sidebar #summary li {
+  margin: 0.1em 0;
+}
+
+#llm-helper-sidebar #summary code {
+  background: #f0f0f0;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+#llm-helper-sidebar #summary pre {
+  background: #f0f0f0;
+  padding: 1em;
+  border-radius: 3px;
+  overflow-x: auto;
+}
+
+#llm-helper-sidebar #summary blockquote {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  border-left: 3px solid #ddd;
+  color: #666;
+}
+
+#llm-helper-sidebar .titlebar {
+  margin: -10px -10px 10px -10px;
+  padding: 8px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+#llm-helper-sidebar button {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+.icon-button:hover {
+  background: rgba(0, 0, 0, 0.1);
 } 
