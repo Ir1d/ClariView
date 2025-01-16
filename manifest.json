@@ -12,7 +12,10 @@
     {
       "matches": ["<all_urls>"],
       "css": ["content-styles.css"],
-      "js": ["content-script.js"],
+      "js": [
+        "marked.min.js",
+        "content-script.js"
+      ],
       "run_at": "document_end"
     }
   ],

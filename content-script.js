@@ -184,7 +184,12 @@ function createPopup() {
           if (data.error) {
             throw new Error(data.error.message);
           }
-          summaryDiv.textContent = data.choices[0].message.content;
+          // Render markdown content
+          summaryDiv.innerHTML = marked.parse(data.choices[0].message.content, {
+            gfm: true,
+            breaks: true,
+            sanitize: true
+          });
         } catch (error) {
           summaryDiv.textContent = `Error: ${error.message}`;
         }
