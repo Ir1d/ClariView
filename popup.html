@@ -4,23 +4,62 @@
   <title>Web Page Summarizer</title>
   <style>
     body {
-      width: 300px;
+      min-width: 200px;
+      min-height: 100px;
       padding: 10px;
+      margin: 0;
+      user-select: none;
+      background: white;
+    }
+    body.detached {
+      width: auto;
+      height: auto;
+    }
+    .titlebar {
+      background: #f0f0f0;
+      padding: 5px;
+      cursor: move;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ccc;
+      margin: -10px -10px 10px -10px;
+    }
+    .display-mode {
+      margin-bottom: 10px;
     }
     button {
-      width: 100%;
       padding: 8px;
       margin-bottom: 10px;
     }
     #summary {
       margin-top: 10px;
       white-space: pre-wrap;
+      user-select: text;
+      min-height: 50px;
+    }
+    .resize-handle {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 15px;
+      height: 15px;
+      cursor: se-resize;
+      background: linear-gradient(135deg, transparent 50%, #ccc 50%);
     }
   </style>
 </head>
 <body>
+  <div class="titlebar" id="titlebar">
+    <span>LLM Helper</span>
+    <select id="displayMode">
+      <option value="popup">Popup</option>
+      <option value="sidebar">Sidebar</option>
+    </select>
+  </div>
   <button id="summarize">Summarize Page</button>
   <div id="summary"></div>
+  <div class="resize-handle" id="resize-handle"></div>
   <script src="popup.js"></script>
 </body>
 </html> 

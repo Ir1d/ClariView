@@ -1,0 +1,29 @@
+#llm-helper-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+  z-index: 9999;
+  border-left: 1px solid #ccc;
+  transition: transform 0.3s ease;
+}
+
+#llm-helper-sidebar.collapsed {
+  transform: translateX(100%);
+}
+
+#llm-helper-toggle {
+  position: fixed;
+  top: 50%;
+  right: 300px;
+  transform: translateY(-50%);
+  z-index: 10000;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-right: none;
+  cursor: pointer;
+} 
