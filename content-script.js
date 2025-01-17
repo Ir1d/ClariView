@@ -11,8 +11,16 @@ function createPopup(selectedText = null) {
     <div class="titlebar">
       <span>LLM Helper</span>
       <div class="actions">
-        <button class="icon-button" id="retry" title="Retry">🔄</button>
-        <button class="icon-button" id="copy" title="Copy">📋</button>
+        <button class="icon-button" id="retry" title="Retry">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
+          </svg>
+        </button>
+        <button class="icon-button" id="copy" title="Copy">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
+          </svg>
+        </button>
         <select id="displayMode">
           <option value="popup">Popup</option>
           <option value="sidebar">Sidebar</option>
@@ -229,14 +237,13 @@ function createPopup(selectedText = null) {
   copyButton.addEventListener('click', async () => {
     if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
       try {
-        // Copy the raw markdown if available, otherwise fall back to rendered text
         const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
         await navigator.clipboard.writeText(textToCopy);
         // Optional: Show a brief success message
-        const originalText = copyButton.innerHTML;
-        copyButton.innerHTML = '✓';
+        const originalHTML = copyButton.innerHTML;
+        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
         setTimeout(() => {
-          copyButton.innerHTML = originalText;
+          copyButton.innerHTML = originalHTML;
         }, 1000);
       } catch (err) {
         console.error('Failed to copy text:', err);
@@ -255,8 +262,16 @@ function createSidebar(selectedText = null) {
     <div class="titlebar">
       <span>LLM Helper</span>
       <div class="actions">
-        <button class="icon-button" id="retry" title="Retry">🔄</button>
-        <button class="icon-button" id="copy" title="Copy">📋</button>
+        <button class="icon-button" id="retry" title="Retry">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
+          </svg>
+        </button>
+        <button class="icon-button" id="copy" title="Copy">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
+          </svg>
+        </button>
         <select id="displayMode">
           <option value="sidebar">Sidebar</option>
           <option value="popup">Popup</option>
@@ -385,14 +400,13 @@ function createSidebar(selectedText = null) {
   copyButton.addEventListener('click', async () => {
     if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
       try {
-        // Copy the raw markdown if available, otherwise fall back to rendered text
         const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
         await navigator.clipboard.writeText(textToCopy);
         // Optional: Show a brief success message
-        const originalText = copyButton.innerHTML;
-        copyButton.innerHTML = '✓';
+        const originalHTML = copyButton.innerHTML;
+        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
         setTimeout(() => {
-          copyButton.innerHTML = originalText;
+          copyButton.innerHTML = originalHTML;
         }, 1000);
       } catch (err) {
         console.error('Failed to copy text:', err);
@@ -408,11 +422,13 @@ function createSidebar(selectedText = null) {
 document.addEventListener('create-llm-popup', (event) => {
   const selectedText = event.detail?.selectedText;
   createPopup(selectedText);
-  // Auto-trigger summarize if we have selected text
-  if (selectedText) {
-    const popup = document.getElementById('llm-helper-popup');
-    if (popup) {
-      popup.querySelector('#summarize').click();
+  // Check for auto-summarize setting or selected text
+  chrome.storage.sync.get(['autoSummarize'], function(data) {
+    if (selectedText || data.autoSummarize) {
+      const popup = document.getElementById('llm-helper-popup');
+      if (popup) {
+        popup.querySelector('#summarize').click();
+      }
     }
-  }
+  });
 }); 

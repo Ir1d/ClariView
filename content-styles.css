@@ -229,10 +229,18 @@ body.with-sidebar-collapsed {
   border: none;
   padding: 4px 8px;
   cursor: pointer;
-  font-size: 16px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .icon-button:hover {
   background: rgba(0, 0, 0, 0.1);
+}
+
+.icon-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 } 

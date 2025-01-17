@@ -5,7 +5,8 @@ const DEFAULT_SETTINGS = {
   model: "gpt-3.5-turbo",
   maxTokens: 150,
   language: "English",
-  adjustWebpage: true
+  adjustWebpage: true,
+  autoSummarize: false
 };
 
 const PROVIDER_CONFIGS = {
@@ -20,7 +21,7 @@ const PROVIDER_CONFIGS = {
 document.addEventListener('DOMContentLoaded', function() {
   // Load saved settings
   chrome.storage.sync.get(
-    ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language', 'adjustWebpage'], 
+    ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language', 'adjustWebpage', 'autoSummarize'], 
     function(data) {
       const provider = data.aiProvider || DEFAULT_SETTINGS.aiProvider;
       document.getElementById('aiProvider').value = provider;
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('maxTokens').value = data.maxTokens || DEFAULT_SETTINGS.maxTokens;
       document.getElementById('language').value = data.language || DEFAULT_SETTINGS.language;
       document.getElementById('adjustWebpage').checked = data.adjustWebpage ?? DEFAULT_SETTINGS.adjustWebpage;
+      document.getElementById('autoSummarize').checked = data.autoSummarize ?? DEFAULT_SETTINGS.autoSummarize;
 
       updateProviderSettings(provider);
     }
@@ -54,7 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
       model: document.getElementById('model').value,
       maxTokens: parseInt(document.getElementById('maxTokens').value),
       language: document.getElementById('language').value,
-      adjustWebpage: document.getElementById('adjustWebpage').checked
+      adjustWebpage: document.getElementById('adjustWebpage').checked,
+      autoSummarize: document.getElementById('autoSummarize').checked
     };
 
     chrome.storage.sync.set(settings, function() {
