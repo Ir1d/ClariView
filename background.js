@@ -1,3 +1,6 @@
+// Remove existing context menu items
+chrome.contextMenus.removeAll();
+
 // Create context menu
 chrome.contextMenus.create({
   id: "summarize-selection",

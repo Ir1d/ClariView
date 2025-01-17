@@ -27,8 +27,21 @@ function createPopup(selectedText = null) {
         </select>
       </div>
     </div>
-    <button id="summarize">Summarize Page</button>
-    <div id="summary"></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="summary">Summary</button>
+      <button class="tab" data-tab="chat">Chat</button>
+    </div>
+    <div class="tab-content active" id="summary-tab">
+      <button id="summarize" class="primary-button">Summarize</button>
+      <div id="summary"></div>
+    </div>
+    <div class="tab-content" id="chat-tab">
+      <div class="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Ask a question about the page...">
+        <button id="send-chat">Send</button>
+      </div>
+    </div>
     <div class="resize-handle"></div>
   `;
 
@@ -253,6 +266,111 @@ function createPopup(selectedText = null) {
 
   // Store the selected text for mode switching
   summaryDiv.dataset.selectedText = selectedText || '';
+
+  // Handle tab switching
+  const tabs = popup.querySelectorAll('.tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Update active tab
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      // Update active content
+      const tabContents = popup.querySelectorAll('.tab-content');
+      tabContents.forEach(content => content.classList.remove('active'));
+      popup.querySelector(`#${tab.dataset.tab}-tab`).classList.add('active');
+    });
+  });
+
+  // Auto-summarize when opening summary tab
+  const summaryTab = popup.querySelector('[data-tab="summary"]');
+  summaryTab.addEventListener('click', () => {
+    const summaryDiv = popup.querySelector('#summary');
+    if (!summaryDiv.textContent) {
+      summarizeContent();
+    }
+  });
+
+  // Handle chat functionality
+  const chatInput = popup.querySelector('#chat-input');
+  const sendButton = popup.querySelector('#send-chat');
+  const chatMessages = popup.querySelector('.chat-messages');
+
+  async function sendChatMessage() {
+    const question = chatInput.value.trim();
+    if (!question) return;
+
+    // Add user message to chat
+    appendChatMessage('user', question);
+    chatInput.value = '';
+
+    // Get settings from storage
+    chrome.storage.sync.get(
+      ['apiKey', 'model', 'maxTokens'],
+      async function(settings) {
+        if (!settings.apiKey) {
+          appendChatMessage('assistant', 'Please set your API key in the options page.');
+          return;
+        }
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${settings.apiKey}`
+            },
+            body: JSON.stringify({
+              model: settings.model,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a helpful assistant answering questions about the webpage content. Base your answers only on the provided context."
+                },
+                {
+                  role: "user",
+                  content: `Context: ${selectedText || document.body.innerText.substring(0, 4000)}\n\nQuestion: ${question}`
+                }
+              ],
+              max_tokens: settings.maxTokens
+            })
+          });
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error.message);
+          }
+          appendChatMessage('assistant', data.choices[0].message.content);
+        } catch (error) {
+          appendChatMessage('assistant', `Error: ${error.message}`);
+        }
+      }
+    );
+  }
+
+  function appendChatMessage(role, content) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message';
+    messageDiv.innerHTML = `
+      <div class="message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
+      ${marked.parse(content, { gfm: true, breaks: true, sanitize: true })}
+    `;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  sendButton.addEventListener('click', sendChatMessage);
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+
+  // Auto-summarize on creation if needed
+  if (selectedText || autoSummarize) {
+    summarizeContent();
+  }
 }
 
 function createSidebar(selectedText = null) {
@@ -278,8 +396,20 @@ function createSidebar(selectedText = null) {
         </select>
       </div>
     </div>
-    <button id="summarize">Summarize Page</button>
-    <div id="summary"></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="summary">Summary</button>
+      <button class="tab" data-tab="chat">Chat</button>
+    </div>
+    <div class="tab-content active" id="summary-tab">
+      <div id="summary"></div>
+    </div>
+    <div class="tab-content" id="chat-tab">
+      <div class="chat-messages"></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Ask a question about the page...">
+        <button id="send-chat">Send</button>
+      </div>
+    </div>
   `;
 
   document.body.appendChild(sidebar);
