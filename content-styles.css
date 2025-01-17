@@ -2,10 +2,11 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 300px;
+  width: 450px;
   min-width: 300px;
   min-height: 200px;
   max-height: 80vh;
+  height: 500px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 4px;

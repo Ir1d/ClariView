@@ -368,9 +368,11 @@ function createPopup(selectedText = null) {
   });
 
   // Auto-summarize on creation if needed
-  if (selectedText || autoSummarize) {
-    summarizeContent();
-  }
+  chrome.storage.sync.get(['autoSummarize'], function(settings) {
+    if (selectedText || settings.autoSummarize) {
+      summarizeContent();
+    }
+  });
 }
 
 function createSidebar(selectedText = null) {
