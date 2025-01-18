@@ -403,6 +403,7 @@ function createSidebar(selectedText = null) {
       <button class="tab" data-tab="chat">Chat</button>
     </div>
     <div class="tab-content active" id="summary-tab">
+      <button id="summarize" class="primary-button">Summarize</button>
       <div id="summary"></div>
     </div>
     <div class="tab-content" id="chat-tab">
@@ -416,27 +417,31 @@ function createSidebar(selectedText = null) {
 
   document.body.appendChild(sidebar);
 
-  // Add toggle button
-  const toggle = document.createElement('button');
-  toggle.id = 'llm-helper-toggle';
-  toggle.innerHTML = '◀';
-  toggle.onclick = () => {
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    chrome.storage.sync.get(['adjustWebpage'], function(data) {
-      if (data.adjustWebpage ?? true) { // Default to true if not set
-        document.body.classList.toggle('with-sidebar-collapsed');
-      }
-    });
-    toggle.innerHTML = isCollapsed ? '▶' : '◀';
-  };
-  document.body.appendChild(toggle);
-
   // Add margin to webpage
   chrome.storage.sync.get(['adjustWebpage'], function(data) {
     if (data.adjustWebpage ?? true) { // Default to true if not set
       document.body.classList.add('with-sidebar');
     }
   });
+
+  // Create toggle button
+  const toggle = document.createElement('button');
+  toggle.id = 'llm-helper-toggle';
+  toggle.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="toggle-icon">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+    </svg>
+  `;
+  toggle.addEventListener('click', () => {
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    chrome.storage.sync.get(['adjustWebpage'], function(data) {
+      if (data.adjustWebpage ?? true) {
+        document.body.classList.toggle('with-sidebar-collapsed');
+      }
+    });
+    toggle.querySelector('.toggle-icon').style.transform = isCollapsed ? 'rotate(180deg)' : '';
+  });
+  document.body.appendChild(toggle);
 
   // Handle display mode changes
   const displayModeSelect = sidebar.querySelector('#displayMode');
@@ -446,14 +451,149 @@ function createSidebar(selectedText = null) {
       createPopup(selectedText);
       sidebar.remove();
       toggle.remove();
-      // Remove margin from webpage
       document.body.classList.remove('with-sidebar');
       document.body.classList.remove('with-sidebar-collapsed');
     }
   });
 
-  // Handle summarize button click
+  // Add button handlers
+  const retryButton = sidebar.querySelector('#retry');
+  const copyButton = sidebar.querySelector('#copy');
+  const summaryDiv = sidebar.querySelector('#summary');
   const summarizeBtn = sidebar.querySelector('#summarize');
+
+  retryButton.addEventListener('click', async () => {
+    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
+      summarizeBtn.click();
+    }
+  });
+
+  copyButton.addEventListener('click', async () => {
+    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
+      try {
+        const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
+        await navigator.clipboard.writeText(textToCopy);
+        const originalHTML = copyButton.innerHTML;
+        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
+        setTimeout(() => {
+          copyButton.innerHTML = originalHTML;
+        }, 1000);
+      } catch (err) {
+        console.error('Failed to copy text:', err);
+      }
+    }
+  });
+
+  // Store the selected text for mode switching
+  summaryDiv.dataset.selectedText = selectedText || '';
+
+  // Handle tab switching
+  const tabs = sidebar.querySelectorAll('.tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Update active tab
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      // Update active content
+      const tabContents = sidebar.querySelectorAll('.tab-content');
+      tabContents.forEach(content => content.classList.remove('active'));
+      sidebar.querySelector(`#${tab.dataset.tab}-tab`).classList.add('active');
+    });
+  });
+
+  // Auto-summarize when opening summary tab
+  const summaryTab = sidebar.querySelector('[data-tab="summary"]');
+  summaryTab.addEventListener('click', () => {
+    if (!summaryDiv.textContent) {
+      summarizeContent();
+    }
+  });
+
+  // Handle chat functionality
+  const chatInput = sidebar.querySelector('#chat-input');
+  const sendButton = sidebar.querySelector('#send-chat');
+  const chatMessages = sidebar.querySelector('.chat-messages');
+
+  async function sendChatMessage() {
+    const question = chatInput.value.trim();
+    if (!question) return;
+
+    // Add user message to chat
+    appendChatMessage('user', question);
+    chatInput.value = '';
+
+    // Get settings from storage
+    chrome.storage.sync.get(
+      ['apiKey', 'model', 'maxTokens'],
+      async function(settings) {
+        if (!settings.apiKey) {
+          appendChatMessage('assistant', 'Please set your API key in the options page.');
+          return;
+        }
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${settings.apiKey}`
+            },
+            body: JSON.stringify({
+              model: settings.model,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a helpful assistant answering questions about the webpage content. Base your answers only on the provided context."
+                },
+                {
+                  role: "user",
+                  content: `Context: ${selectedText || document.body.innerText.substring(0, 4000)}\n\nQuestion: ${question}`
+                }
+              ],
+              max_tokens: settings.maxTokens
+            })
+          });
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error.message);
+          }
+          appendChatMessage('assistant', data.choices[0].message.content);
+        } catch (error) {
+          appendChatMessage('assistant', `Error: ${error.message}`);
+        }
+      }
+    );
+  }
+
+  function appendChatMessage(role, content) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message';
+    messageDiv.innerHTML = `
+      <div class="message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
+      ${marked.parse(content, { gfm: true, breaks: true, sanitize: true })}
+    `;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  sendButton.addEventListener('click', sendChatMessage);
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+
+  // Auto-summarize on creation if needed
+  chrome.storage.sync.get(['autoSummarize'], function(settings) {
+    if (selectedText || settings.autoSummarize) {
+      summarizeContent();
+    }
+  });
+
+  // Handle summarize button click
   summarizeBtn.addEventListener('click', async () => {
     const summaryDiv = sidebar.querySelector('#summary');
     summaryDiv.textContent = 'Summarizing...';
@@ -506,6 +646,9 @@ function createSidebar(selectedText = null) {
           if (data.error) {
             throw new Error(data.error.message);
           }
+          // Store the raw markdown
+          summaryDiv.dataset.markdown = data.choices[0].message.content;
+          // Render markdown content
           summaryDiv.innerHTML = marked.parse(data.choices[0].message.content, {
             gfm: true,
             breaks: true,
@@ -517,37 +660,6 @@ function createSidebar(selectedText = null) {
       }
     );
   });
-
-  // Add button handlers
-  const retryButton = sidebar.querySelector('#retry');
-  const copyButton = sidebar.querySelector('#copy');
-  const summaryDiv = sidebar.querySelector('#summary');
-
-  retryButton.addEventListener('click', async () => {
-    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
-      summarizeBtn.click(); // Reuse the existing summarize functionality
-    }
-  });
-
-  copyButton.addEventListener('click', async () => {
-    if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
-      try {
-        const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
-        await navigator.clipboard.writeText(textToCopy);
-        // Optional: Show a brief success message
-        const originalHTML = copyButton.innerHTML;
-        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
-        setTimeout(() => {
-          copyButton.innerHTML = originalHTML;
-        }, 1000);
-      } catch (err) {
-        console.error('Failed to copy text:', err);
-      }
-    }
-  });
-
-  // Store the selected text for mode switching
-  summaryDiv.dataset.selectedText = selectedText || '';
 }
 
 // Only listen for the create event
