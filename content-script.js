@@ -1,9 +1,30 @@
-function createPopup(selectedText = null) {
+async function loadStyles() {
+  const styleId = 'llm-helper-styles';
+  let styleElement = document.getElementById(styleId);
+  if (!styleElement) {
+    try {
+      const url = chrome.runtime.getURL('content-styles.css');
+      const response = await fetch(url);
+      const css = await response.text();
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      styleElement.textContent = css;
+      document.head.appendChild(styleElement);
+    } catch (error) {
+      console.error('Failed to load styles:', error);
+    }
+  }
+}
+
+async function createPopup(selectedText = null) {
   // Remove existing popup or sidebar if any
   const existingPopup = document.getElementById('llm-helper-popup');
   const existingSidebar = document.getElementById('llm-helper-sidebar');
   if (existingPopup) existingPopup.remove();
   if (existingSidebar) existingSidebar.remove();
+
+  // Load styles
+  await loadStyles();
 
   const popup = document.createElement('div');
   popup.id = 'llm-helper-popup';
@@ -84,12 +105,14 @@ function createPopup(selectedText = null) {
     
     titlebar.style.cursor = 'grabbing';
     e.preventDefault(); // Prevent text selection
+    e.stopPropagation(); // Prevent event from reaching webpage
   }
 
   function handleDrag(e) {
     if (!isDragging) return;
 
     e.preventDefault();
+    e.stopPropagation(); // Prevent event from reaching webpage
     
     // Calculate new position
     currentX = e.clientX - initialX;
@@ -108,12 +131,13 @@ function createPopup(selectedText = null) {
     popup.style.right = 'auto'; // Remove right positioning
   }
 
-  function handleDragEnd() {
+  function handleDragEnd(e) {
     if (!isDragging) return;
     
     isDragging = false;
     titlebar.style.cursor = 'grab';
     popup.style.transition = ''; // Re-enable transitions
+    e.stopPropagation(); // Prevent event from reaching webpage
   }
 
   // Resizing functionality
@@ -134,12 +158,14 @@ function createPopup(selectedText = null) {
     startY = e.clientY;
     
     e.preventDefault();
+    e.stopPropagation(); // Prevent event from reaching webpage
   }
 
   function handleResize(e) {
     if (!isResizing) return;
 
     e.preventDefault();
+    e.stopPropagation(); // Prevent event from reaching webpage
     
     // Calculate new dimensions
     const width = startWidth + (e.clientX - startX);
@@ -150,22 +176,23 @@ function createPopup(selectedText = null) {
     popup.style.height = `${Math.max(200, height)}px`;
   }
 
-  function handleResizeEnd() {
+  function handleResizeEnd(e) {
     if (!isResizing) return;
     
     isResizing = false;
     popup.style.transition = ''; // Re-enable transitions
+    e.stopPropagation(); // Prevent event from reaching webpage
   }
 
   // Add event listeners for dragging
   titlebar.addEventListener('mousedown', handleDragStart);
-  document.addEventListener('mousemove', handleDrag);
-  document.addEventListener('mouseup', handleDragEnd);
+  document.addEventListener('mousemove', handleDrag, { capture: true });
+  document.addEventListener('mouseup', handleDragEnd, { capture: true });
 
   // Add event listeners for resizing
   resizeHandle.addEventListener('mousedown', handleResizeStart);
-  document.addEventListener('mousemove', handleResize);
-  document.addEventListener('mouseup', handleResizeEnd);
+  document.addEventListener('mousemove', handleResize, { capture: true });
+  document.addEventListener('mouseup', handleResizeEnd, { capture: true });
 
   // Handle summarize button click
   const summarizeBtn = popup.querySelector('#summarize');
@@ -375,7 +402,16 @@ function createPopup(selectedText = null) {
   });
 }
 
-function createSidebar(selectedText = null) {
+async function createSidebar(selectedText = null) {
+  // Remove existing popup or sidebar if any
+  const existingPopup = document.getElementById('llm-helper-popup');
+  const existingSidebar = document.getElementById('llm-helper-sidebar');
+  if (existingPopup) existingPopup.remove();
+  if (existingSidebar) existingSidebar.remove();
+
+  // Load styles
+  await loadStyles();
+
   const sidebar = document.createElement('div');
   sidebar.id = 'llm-helper-sidebar';
   sidebar.innerHTML = `
@@ -662,10 +698,33 @@ function createSidebar(selectedText = null) {
   });
 }
 
+// Clean up function to remove styles when extension is not in use
+function cleanup() {
+  const styleElement = document.getElementById('llm-helper-styles');
+  if (styleElement) {
+    styleElement.remove();
+  }
+  const popup = document.getElementById('llm-helper-popup');
+  if (popup) {
+    popup.remove();
+  }
+  const sidebar = document.getElementById('llm-helper-sidebar');
+  if (sidebar) {
+    sidebar.remove();
+  }
+  const toggle = document.getElementById('llm-helper-toggle');
+  if (toggle) {
+    toggle.remove();
+  }
+  // Remove any body classes we added
+  document.body.classList.remove('with-sidebar', 'with-sidebar-collapsed');
+}
+
 // Only listen for the create event
-document.addEventListener('create-llm-popup', (event) => {
+document.addEventListener('create-llm-popup', async (event) => {
+  cleanup(); // Clean up any existing elements first
   const selectedText = event.detail?.selectedText;
-  createPopup(selectedText);
+  await createPopup(selectedText);
   // Check for auto-summarize setting or selected text
   chrome.storage.sync.get(['autoSummarize'], function(data) {
     if (selectedText || data.autoSummarize) {
