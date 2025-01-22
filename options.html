@@ -58,6 +58,9 @@
       <label for="aiProvider">AI Provider:</label>
       <select id="aiProvider">
         <option value="openai">OpenAI</option>
+        <option value="openai-custom">Custom OpenAI-compatible API</option>
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="deepseek">DeepSeek</option>
       </select>
     </div>
 
@@ -73,13 +76,63 @@
           <option value="gpt-4">GPT-4</option>
           <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
           <option value="gpt-4-1106-preview">GPT-4 Turbo (1106)</option>
-          <option value="gpt-4o-mini-2024-07-18">GPT-4o Mini</option>
+          <option value="gpt-4o-mini-2024-07-18" selected>GPT-4o Mini</option>
           <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
           <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16K</option>
         </select>
       </div>
     </div>
 
+    <!-- Custom OpenAI settings -->
+    <div id="openai-customSettings" class="provider-settings">
+      <div class="form-group">
+        <label for="customEndpoint">API Endpoint:</label>
+        <input type="text" id="customEndpoint" placeholder="https://your-api-endpoint/v1/chat/completions">
+      </div>
+      <div class="form-group">
+        <label for="customApiKey">API Key:</label>
+        <input type="text" id="customApiKey" placeholder="Enter your API key">
+      </div>
+      <div class="form-group">
+        <label for="customModel">Model:</label>
+        <input type="text" id="customModel" placeholder="Enter model name">
+      </div>
+    </div>
+
+    <!-- Anthropic settings -->
+    <div id="anthropicSettings" class="provider-settings">
+      <div class="form-group">
+        <label for="anthropicKey">Anthropic API Key:</label>
+        <input type="text" id="anthropicKey" placeholder="Enter your Anthropic API key">
+      </div>
+      <div class="form-group">
+        <label for="anthropicModel">Model:</label>
+        <select id="anthropicModel">
+          <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+          <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+          <option value="claude-2.1">Claude 2.1</option>
+          <option value="claude-2.0">Claude 2.0</option>
+          <option value="claude-instant-1.2">Claude Instant</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- DeepSeek settings -->
+    <div id="deepseekSettings" class="provider-settings">
+      <div class="form-group">
+        <label for="deepseekKey">DeepSeek API Key:</label>
+        <input type="text" id="deepseekKey" placeholder="Enter your DeepSeek API key">
+      </div>
+      <div class="form-group">
+        <label for="deepseekModel">Model:</label>
+        <select id="deepseekModel">
+          <option value="deepseek-chat">DeepSeek Chat</option>
+          <option value="deepseek-coder">DeepSeek Coder</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Common settings -->
     <div class="form-group">
       <label for="language">Default Language:</label>
       <select id="language">

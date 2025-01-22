@@ -202,7 +202,7 @@ async function createPopup(selectedText = null) {
 
     // Get settings from storage
     chrome.storage.sync.get(
-      ['apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
+      ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
       async function(settings) {
         if (!settings.apiKey) {
           summaryDiv.textContent = 'Please set your API key in the options page.';
@@ -222,36 +222,23 @@ async function createPopup(selectedText = null) {
           .replace('{{selected_language}}', settings.language);
 
         try {
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${settings.apiKey}`
+          const messages = [
+            {
+              role: "system",
+              content: settings.systemMessage
             },
-            body: JSON.stringify({
-              model: settings.model,
-              messages: [
-                {
-                  role: "system",
-                  content: settings.systemMessage
-                },
-                {
-                  role: "user",
-                  content: processedPrompt
-                }
-              ],
-              max_tokens: settings.maxTokens
-            })
-          });
+            {
+              role: "user",
+              content: processedPrompt
+            }
+          ];
 
-          const data = await response.json();
-          if (data.error) {
-            throw new Error(data.error.message);
-          }
+          const content = await callLLMApi(settings, messages);
+          
           // Store the raw markdown
-          summaryDiv.dataset.markdown = data.choices[0].message.content;
+          summaryDiv.dataset.markdown = content;
           // Render markdown content
-          summaryDiv.innerHTML = marked.parse(data.choices[0].message.content, {
+          summaryDiv.innerHTML = marked.parse(content, {
             gfm: true,
             breaks: true,
             sanitize: true
@@ -324,50 +311,29 @@ async function createPopup(selectedText = null) {
   const chatMessages = popup.querySelector('.chat-messages');
 
   async function sendChatMessage() {
-    const question = chatInput.value.trim();
-    if (!question) return;
+    const message = chatInput.value.trim();
+    if (!message) return;
 
-    // Add user message to chat
-    appendChatMessage('user', question);
+    appendChatMessage('user', message);
     chatInput.value = '';
 
-    // Get settings from storage
     chrome.storage.sync.get(
-      ['apiKey', 'model', 'maxTokens'],
+      ['aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 'anthropicModel', 'deepseekKey', 'deepseekModel'],
       async function(settings) {
-        if (!settings.apiKey) {
-          appendChatMessage('assistant', 'Please set your API key in the options page.');
-          return;
-        }
-
         try {
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${settings.apiKey}`
+          const messages = [
+            {
+              role: "system",
+              content: settings.systemMessage
             },
-            body: JSON.stringify({
-              model: settings.model,
-              messages: [
-                {
-                  role: "system",
-                  content: "You are a helpful assistant answering questions about the webpage content. Base your answers only on the provided context."
-                },
-                {
-                  role: "user",
-                  content: `Context: ${selectedText || document.body.innerText.substring(0, 4000)}\n\nQuestion: ${question}`
-                }
-              ],
-              max_tokens: settings.maxTokens
-            })
-          });
+            {
+              role: "user",
+              content: message
+            }
+          ];
 
-          const data = await response.json();
-          if (data.error) {
-            throw new Error(data.error.message);
-          }
-          appendChatMessage('assistant', data.choices[0].message.content);
+          const response = await callLLMApi(settings, messages);
+          appendChatMessage('assistant', response);
         } catch (error) {
           appendChatMessage('assistant', `Error: ${error.message}`);
         }
@@ -552,50 +518,29 @@ async function createSidebar(selectedText = null) {
   const chatMessages = sidebar.querySelector('.chat-messages');
 
   async function sendChatMessage() {
-    const question = chatInput.value.trim();
-    if (!question) return;
+    const message = chatInput.value.trim();
+    if (!message) return;
 
-    // Add user message to chat
-    appendChatMessage('user', question);
+    appendChatMessage('user', message);
     chatInput.value = '';
 
-    // Get settings from storage
     chrome.storage.sync.get(
-      ['apiKey', 'model', 'maxTokens'],
+      ['aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 'anthropicModel', 'deepseekKey', 'deepseekModel'],
       async function(settings) {
-        if (!settings.apiKey) {
-          appendChatMessage('assistant', 'Please set your API key in the options page.');
-          return;
-        }
-
         try {
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${settings.apiKey}`
+          const messages = [
+            {
+              role: "system",
+              content: settings.systemMessage
             },
-            body: JSON.stringify({
-              model: settings.model,
-              messages: [
-                {
-                  role: "system",
-                  content: "You are a helpful assistant answering questions about the webpage content. Base your answers only on the provided context."
-                },
-                {
-                  role: "user",
-                  content: `Context: ${selectedText || document.body.innerText.substring(0, 4000)}\n\nQuestion: ${question}`
-                }
-              ],
-              max_tokens: settings.maxTokens
-            })
-          });
+            {
+              role: "user",
+              content: message
+            }
+          ];
 
-          const data = await response.json();
-          if (data.error) {
-            throw new Error(data.error.message);
-          }
-          appendChatMessage('assistant', data.choices[0].message.content);
+          const response = await callLLMApi(settings, messages);
+          appendChatMessage('assistant', response);
         } catch (error) {
           appendChatMessage('assistant', `Error: ${error.message}`);
         }
@@ -636,7 +581,7 @@ async function createSidebar(selectedText = null) {
 
     // Get settings from storage
     chrome.storage.sync.get(
-      ['apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
+      ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
       async function(settings) {
         if (!settings.apiKey) {
           summaryDiv.textContent = 'Please set your API key in the options page.';
@@ -656,36 +601,23 @@ async function createSidebar(selectedText = null) {
           .replace('{{selected_language}}', settings.language);
 
         try {
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${settings.apiKey}`
+          const messages = [
+            {
+              role: "system",
+              content: settings.systemMessage
             },
-            body: JSON.stringify({
-              model: settings.model,
-              messages: [
-                {
-                  role: "system",
-                  content: settings.systemMessage
-                },
-                {
-                  role: "user",
-                  content: processedPrompt
-                }
-              ],
-              max_tokens: settings.maxTokens
-            })
-          });
+            {
+              role: "user",
+              content: processedPrompt
+            }
+          ];
 
-          const data = await response.json();
-          if (data.error) {
-            throw new Error(data.error.message);
-          }
+          const content = await callLLMApi(settings, messages);
+          
           // Store the raw markdown
-          summaryDiv.dataset.markdown = data.choices[0].message.content;
+          summaryDiv.dataset.markdown = content;
           // Render markdown content
-          summaryDiv.innerHTML = marked.parse(data.choices[0].message.content, {
+          summaryDiv.innerHTML = marked.parse(content, {
             gfm: true,
             breaks: true,
             sanitize: true
@@ -734,4 +666,226 @@ document.addEventListener('create-llm-popup', async (event) => {
       }
     }
   });
-}); 
+});
+
+// Function to make API calls to different LLM providers
+async function callLLMApi(settings, messages) {
+  switch (settings.aiProvider) {
+    case 'openai':
+      return await callOpenAI(settings, messages);
+    case 'openai-custom':
+      return await callCustomOpenAI(settings, messages);
+    case 'anthropic':
+      return await callAnthropic(settings, messages);
+    case 'deepseek':
+      return await callDeepSeek(settings, messages);
+    default:
+      throw new Error('Unsupported AI provider');
+  }
+}
+
+async function callOpenAI(settings, messages) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.apiKey}`
+    },
+    body: JSON.stringify({
+      model: settings.model,
+      messages: messages,
+      max_tokens: parseInt(settings.maxTokens)
+    })
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  return data.choices[0].message.content;
+}
+
+async function callCustomOpenAI(settings, messages) {
+  const response = await fetch(settings.customEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.customApiKey}`
+    },
+    body: JSON.stringify({
+      model: settings.customModel,
+      messages: messages,
+      max_tokens: parseInt(settings.maxTokens)
+    })
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  return data.choices[0].message.content;
+}
+
+async function callAnthropic(settings, messages) {
+  const systemMessage = messages.find(m => m.role === 'system')?.content || '';
+  const userMessage = messages.find(m => m.role === 'user')?.content || '';
+  
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': settings.anthropicKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: settings.anthropicModel,
+      max_tokens: parseInt(settings.maxTokens),
+      messages: [
+        {
+          role: 'user',
+          content: `${systemMessage}\n\n${userMessage}`
+        }
+      ]
+    })
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  return data.content[0].text;
+}
+
+async function callDeepSeek(settings, messages) {
+  const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.deepseekKey}`
+    },
+    body: JSON.stringify({
+      model: settings.deepseekModel,
+      messages: messages,
+      max_tokens: parseInt(settings.maxTokens)
+    })
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  return data.choices[0].message.content;
+}
+
+// Update the summarize function to use the new API call function
+async function summarizeContent() {
+  const summaryDiv = document.querySelector('#summary');
+  summaryDiv.textContent = 'Summarizing...';
+
+  // Get settings from storage
+  chrome.storage.sync.get(
+    [
+      'aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 
+      'language', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
+      'anthropicModel', 'deepseekKey', 'deepseekModel'
+    ],
+    async function(settings) {
+      // Check for required API key based on provider
+      let apiKey;
+      switch (settings.aiProvider) {
+        case 'openai':
+          apiKey = settings.apiKey;
+          break;
+        case 'openai-custom':
+          apiKey = settings.customApiKey;
+          break;
+        case 'anthropic':
+          apiKey = settings.anthropicKey;
+          break;
+        case 'deepseek':
+          apiKey = settings.deepseekKey;
+          break;
+      }
+
+      if (!apiKey) {
+        summaryDiv.textContent = 'Please set your API key in the options page.';
+        return;
+      }
+
+      const pageContent = {
+        content: selectedText || document.body.innerText.substring(0, 4000),
+        title: document.title,
+        url: window.location.href
+      };
+
+      const processedPrompt = settings.userPrompt
+        .replace('{{content}}', pageContent.content)
+        .replace('{{url}}', pageContent.url)
+        .replace('{{title}}', pageContent.title)
+        .replace('{{selected_language}}', settings.language);
+
+      try {
+        const messages = [
+          {
+            role: "system",
+            content: settings.systemMessage
+          },
+          {
+            role: "user",
+            content: processedPrompt
+          }
+        ];
+
+        const content = await callLLMApi(settings, messages);
+        
+        // Store the raw markdown
+        summaryDiv.dataset.markdown = content;
+        // Render markdown content
+        summaryDiv.innerHTML = marked.parse(content, {
+          gfm: true,
+          breaks: true,
+          sanitize: true
+        });
+      } catch (error) {
+        summaryDiv.textContent = `Error: ${error.message}`;
+      }
+    }
+  );
+}
+
+// Update the chat message sending function to use the new API call function
+async function sendChatMessage() {
+  const chatInput = document.querySelector('#chat-input');
+  const message = chatInput.value.trim();
+  if (!message) return;
+
+  appendChatMessage('user', message);
+  chatInput.value = '';
+
+  chrome.storage.sync.get(
+    [
+      'aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 
+      'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
+      'anthropicModel', 'deepseekKey', 'deepseekModel'
+    ],
+    async function(settings) {
+      try {
+        const messages = [
+          {
+            role: "system",
+            content: settings.systemMessage
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ];
+
+        const response = await callLLMApi(settings, messages);
+        appendChatMessage('assistant', response);
+      } catch (error) {
+        appendChatMessage('assistant', `Error: ${error.message}`);
+      }
+    }
+  );
+} 
