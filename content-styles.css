@@ -1,4 +1,4 @@
-#llm-helper-popup {
+#clariview-popup {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -20,7 +20,7 @@
   overflow: hidden;
 }
 
-#llm-helper-popup .titlebar {
+#clariview-popup .titlebar {
   margin: -10px -10px 10px -10px;
   padding: 8px;
   background: #f0f0f0;
@@ -32,14 +32,14 @@
   user-select: none;
 }
 
-#llm-helper-popup button {
+#clariview-popup button {
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;
   cursor: pointer;
 }
 
-#llm-helper-popup #summary {
+#clariview-popup #summary {
   min-height: 100px;
   max-height: 400px;
   overflow-y: auto;
@@ -49,51 +49,51 @@
   line-height: 1.4;
 }
 
-#llm-helper-popup #summary h1,
-#llm-helper-popup #summary h2,
-#llm-helper-popup #summary h3,
-#llm-helper-popup #summary h4 {
+#clariview-popup #summary h1,
+#clariview-popup #summary h2,
+#clariview-popup #summary h3,
+#clariview-popup #summary h4 {
   margin-top: 0.7em;
   margin-bottom: 0.3em;
   font-weight: 600;
 }
 
-#llm-helper-popup #summary p {
+#clariview-popup #summary p {
   margin: 0.3em 0;
 }
 
-#llm-helper-popup #summary ul,
-#llm-helper-popup #summary ol {
+#clariview-popup #summary ul,
+#clariview-popup #summary ol {
   margin: 0.3em 0;
   padding-left: 2em;
 }
 
-#llm-helper-popup #summary li {
+#clariview-popup #summary li {
   margin: 0.1em 0;
 }
 
-#llm-helper-popup #summary code {
+#clariview-popup #summary code {
   background: #f0f0f0;
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-family: monospace;
 }
 
-#llm-helper-popup #summary pre {
+#clariview-popup #summary pre {
   background: #f0f0f0;
   padding: 1em;
   border-radius: 3px;
   overflow-x: auto;
 }
 
-#llm-helper-popup #summary blockquote {
+#clariview-popup #summary blockquote {
   margin: 0.5em 0;
   padding-left: 1em;
   border-left: 3px solid #ddd;
   color: #666;
 }
 
-#llm-helper-popup .resize-handle {
+#clariview-popup .resize-handle {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -103,7 +103,7 @@
   background: linear-gradient(135deg, transparent 50%, #ccc 50%);
 }
 
-#llm-helper-sidebar {
+#clariview-sidebar {
   position: fixed;
   top: 0;
   right: 0;
@@ -121,7 +121,7 @@
   overflow: hidden;
 }
 
-#llm-helper-sidebar .tab-content {
+#clariview-sidebar .tab-content {
   display: none;
   padding: 10px 0;
   flex: 1;
@@ -129,12 +129,12 @@
   overflow: hidden;
 }
 
-#llm-helper-sidebar .tab-content.active {
+#clariview-sidebar .tab-content.active {
   display: flex;
   flex-direction: column;
 }
 
-#llm-helper-sidebar #chat-tab {
+#clariview-sidebar #chat-tab {
   position: relative;
   display: none;
   flex: 1;
@@ -142,12 +142,12 @@
   overflow: hidden;
 }
 
-#llm-helper-sidebar #chat-tab.active {
+#clariview-sidebar #chat-tab.active {
   display: flex;
   flex-direction: column;
 }
 
-#llm-helper-sidebar .chat-messages {
+#clariview-sidebar .chat-messages {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -157,7 +157,7 @@
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
-#llm-helper-sidebar .chat-input {
+#clariview-sidebar .chat-input {
   flex-shrink: 0;
   background: white;
   padding-top: 10px;
@@ -177,11 +177,11 @@ body.with-sidebar-collapsed {
   margin-right: 0;
 }
 
-#llm-helper-sidebar.collapsed {
+#clariview-sidebar.collapsed {
   transform: translateX(100%);
 }
 
-#llm-helper-toggle {
+#clariview-toggle {
   position: fixed;
   top: 50%;
   right: 450px;
@@ -200,22 +200,22 @@ body.with-sidebar-collapsed {
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
-#llm-helper-toggle .toggle-icon {
+#clariview-toggle .toggle-icon {
   width: 20px;
   height: 20px;
   stroke: #666;
   transition: transform 0.3s ease;
 }
 
-#llm-helper-toggle:hover {
+#clariview-toggle:hover {
   background: #f8f8f8;
 }
 
-#llm-helper-sidebar.collapsed + #llm-helper-toggle {
+#clariview-sidebar.collapsed + #clariview-toggle {
   right: 0;
 }
 
-#llm-helper-sidebar #summary {
+#clariview-sidebar #summary {
   min-height: 100px;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
@@ -225,51 +225,51 @@ body.with-sidebar-collapsed {
   line-height: 1.4;
 }
 
-#llm-helper-sidebar #summary h1,
-#llm-helper-sidebar #summary h2,
-#llm-helper-sidebar #summary h3,
-#llm-helper-sidebar #summary h4 {
+#clariview-sidebar #summary h1,
+#clariview-sidebar #summary h2,
+#clariview-sidebar #summary h3,
+#clariview-sidebar #summary h4 {
   margin-top: 0.7em;
   margin-bottom: 0.3em;
   font-weight: 600;
 }
 
-#llm-helper-sidebar #summary p {
+#clariview-sidebar #summary p {
   margin: 0.3em 0;
 }
 
-#llm-helper-sidebar #summary ul,
-#llm-helper-sidebar #summary ol {
+#clariview-sidebar #summary ul,
+#clariview-sidebar #summary ol {
   margin: 0.3em 0;
   padding-left: 2em;
 }
 
-#llm-helper-sidebar #summary li {
+#clariview-sidebar #summary li {
   margin: 0.1em 0;
 }
 
-#llm-helper-sidebar #summary code {
+#clariview-sidebar #summary code {
   background: #f0f0f0;
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-family: monospace;
 }
 
-#llm-helper-sidebar #summary pre {
+#clariview-sidebar #summary pre {
   background: #f0f0f0;
   padding: 1em;
   border-radius: 3px;
   overflow-x: auto;
 }
 
-#llm-helper-sidebar #summary blockquote {
+#clariview-sidebar #summary blockquote {
   margin: 0.5em 0;
   padding-left: 1em;
   border-left: 3px solid #ddd;
   color: #666;
 }
 
-#llm-helper-sidebar .titlebar {
+#clariview-sidebar .titlebar {
   margin: -10px -10px 10px -10px;
   padding: 8px;
   background: #f0f0f0;
@@ -280,7 +280,7 @@ body.with-sidebar-collapsed {
   user-select: none;
 }
 
-#llm-helper-sidebar button {
+#clariview-sidebar button {
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;

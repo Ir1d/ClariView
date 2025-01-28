@@ -1,5 +1,5 @@
 async function loadStyles() {
-  const styleId = 'llm-helper-styles';
+  const styleId = 'clariview-styles';
   let styleElement = document.getElementById(styleId);
   if (!styleElement) {
     try {
@@ -18,8 +18,8 @@ async function loadStyles() {
 
 async function createPopup(selectedText = null) {
   // Remove existing popup or sidebar if any
-  const existingPopup = document.getElementById('llm-helper-popup');
-  const existingSidebar = document.getElementById('llm-helper-sidebar');
+  const existingPopup = document.getElementById('clariview-popup');
+  const existingSidebar = document.getElementById('clariview-sidebar');
   if (existingPopup) existingPopup.remove();
   if (existingSidebar) existingSidebar.remove();
 
@@ -27,7 +27,7 @@ async function createPopup(selectedText = null) {
   await loadStyles();
 
   const popup = document.createElement('div');
-  popup.id = 'llm-helper-popup';
+  popup.id = 'clariview-popup';
   popup.innerHTML = `
     <div class="titlebar">
       <span>LLM Helper</span>
@@ -370,8 +370,8 @@ async function createPopup(selectedText = null) {
 
 async function createSidebar(selectedText = null) {
   // Remove existing popup or sidebar if any
-  const existingPopup = document.getElementById('llm-helper-popup');
-  const existingSidebar = document.getElementById('llm-helper-sidebar');
+  const existingPopup = document.getElementById('clariview-popup');
+  const existingSidebar = document.getElementById('clariview-sidebar');
   if (existingPopup) existingPopup.remove();
   if (existingSidebar) existingSidebar.remove();
 
@@ -379,7 +379,7 @@ async function createSidebar(selectedText = null) {
   await loadStyles();
 
   const sidebar = document.createElement('div');
-  sidebar.id = 'llm-helper-sidebar';
+  sidebar.id = 'clariview-sidebar';
   sidebar.innerHTML = `
     <div class="titlebar">
       <span>LLM Helper</span>
@@ -428,7 +428,7 @@ async function createSidebar(selectedText = null) {
 
   // Create toggle button
   const toggle = document.createElement('button');
-  toggle.id = 'llm-helper-toggle';
+  toggle.id = 'clariview-toggle';
   toggle.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="toggle-icon">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
@@ -632,19 +632,19 @@ async function createSidebar(selectedText = null) {
 
 // Clean up function to remove styles when extension is not in use
 function cleanup() {
-  const styleElement = document.getElementById('llm-helper-styles');
+  const styleElement = document.getElementById('clariview-styles');
   if (styleElement) {
     styleElement.remove();
   }
-  const popup = document.getElementById('llm-helper-popup');
+  const popup = document.getElementById('clariview-popup');
   if (popup) {
     popup.remove();
   }
-  const sidebar = document.getElementById('llm-helper-sidebar');
+  const sidebar = document.getElementById('clariview-sidebar');
   if (sidebar) {
     sidebar.remove();
   }
-  const toggle = document.getElementById('llm-helper-toggle');
+  const toggle = document.getElementById('clariview-toggle');
   if (toggle) {
     toggle.remove();
   }
@@ -653,14 +653,14 @@ function cleanup() {
 }
 
 // Only listen for the create event
-document.addEventListener('create-llm-popup', async (event) => {
+document.addEventListener('create-clariview-popup', async (event) => {
   cleanup(); // Clean up any existing elements first
   const selectedText = event.detail?.selectedText;
   await createPopup(selectedText);
   // Check for auto-summarize setting or selected text
   chrome.storage.sync.get(['autoSummarize'], function(data) {
     if (selectedText || data.autoSummarize) {
-      const popup = document.getElementById('llm-helper-popup');
+      const popup = document.getElementById('clariview-popup');
       if (popup) {
         popup.querySelector('#summarize').click();
       }

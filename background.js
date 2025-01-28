@@ -14,7 +14,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
       function: () => {
-        const event = new CustomEvent('create-llm-popup', {
+        const event = new CustomEvent('create-clariview-popup', {
           detail: { selectedText: window.getSelection().toString() }
         });
         document.dispatchEvent(event);
@@ -28,8 +28,8 @@ chrome.action.onClicked.addListener((tab) => {
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     function: () => {
-      if (!document.getElementById('llm-helper-popup')) {
-        const event = new CustomEvent('create-llm-popup');
+      if (!document.getElementById('clariview-popup')) {
+        const event = new CustomEvent('create-clariview-popup');
         document.dispatchEvent(event);
       }
     }

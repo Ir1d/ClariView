@@ -1,6 +1,9 @@
-# LLM Helper Chrome Extension
+![](./screenshot.png)
 
-A Chrome extension that helps summarize web pages or selected text using OpenAI's language models.
+# ClariView
+
+A fully customizable Chrome extension that helps summarize web pages or selected text using large language models.
+
 
 ## Features
 
