@@ -248,15 +248,15 @@ async function createPopup(selectedText = null) {
   popup.id = 'clariview-popup';
   popup.innerHTML = `
     <div class="titlebar">
-      <span>LLM Helper</span>
+      <span>ClariView</span>
       <div class="actions">
         <button class="icon-button" id="retry" title="Retry">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
           </svg>
         </button>
         <button class="icon-button" id="copy" title="Copy">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
           </svg>
         </button>
@@ -277,18 +277,176 @@ async function createPopup(selectedText = null) {
     <div class="tab-content" id="chat-tab">
       <div class="chat-messages"></div>
       <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Ask a question about the page...">
-        <button id="send-chat">Send</button>
+        <div class="chat-input-container">
+          <textarea id="chat-input" placeholder="Ask a question..." rows="1"></textarea>
+          <button id="send-chat">Send</button>
+        </div>
       </div>
     </div>
-    <div class="resize-handle"></div>
-  `;
+    <div class="resize-handle"></div>`;
+
+  // Add custom styles
+  if (!document.getElementById('clariview-popup-style')) {
+    const style = document.createElement('style');
+    style.id = 'clariview-popup-style';
+    style.textContent = `
+      #clariview-popup {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 700px;
+        min-height: 400px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      #clariview-popup .titlebar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        cursor: grab;
+        user-select: none;
+      }
+      #clariview-popup .titlebar span {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+      }
+      #clariview-popup .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      #clariview-popup .icon-button {
+        padding: 8px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-radius: 6px;
+        color: #6b7280;
+      }
+      #clariview-popup .icon-button:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
+      #clariview-popup select {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      #clariview-popup .tabs {
+        display: flex;
+        padding: 0 16px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      #clariview-popup .tab {
+        padding: 12px 16px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 16px;
+        color: #6b7280;
+        border-bottom: 2px solid transparent;
+      }
+      #clariview-popup .tab.active {
+        color: #3B82F6;
+        border-bottom-color: #3B82F6;
+        font-weight: 500;
+      }
+      #clariview-popup .tab-content {
+        display: none;
+        padding: 16px;
+        font-size: 16px;
+      }
+      #clariview-popup .tab-content.active {
+        display: block;
+      }
+      #clariview-popup #summary {
+        margin-top: 16px;
+        white-space: pre-wrap;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      #clariview-popup .chat-messages {
+        height: 300px;
+        overflow-y: auto;
+        padding: 16px;
+        font-size: 16px;
+      }
+      #clariview-popup .chat-input {
+        padding: 16px;
+        border-top: 1px solid #e5e7eb;
+      }
+      #clariview-popup .chat-input-container {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+        align-items: flex-start;
+      }
+      #clariview-popup .chat-input textarea {
+        width: 70%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        font-size: 16px;
+        resize: none;
+        min-height: 40px;
+        max-height: 200px;
+        overflow-y: auto;
+        line-height: 1.5;
+        font-family: inherit;
+      }
+      #clariview-popup .chat-input textarea:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+      #clariview-popup .chat-input button {
+        width: 30%;
+        padding: 8px 16px;
+        background: #3B82F6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        white-space: nowrap;
+        align-self: flex-start;
+      }
+      #clariview-popup .chat-input button:hover {
+        background: #2563EB;
+      }
+      #clariview-popup .primary-button {
+        width: 100%;
+        padding: 12px;
+        background: #3B82F6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+      }
+      #clariview-popup .primary-button:hover {
+        background: #2563EB;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   // Set initial position
   popup.style.position = 'fixed';
   popup.style.top = '20px';
   popup.style.right = '20px';
-  popup.style.width = '300px';
+  popup.style.width = '700px';
   
   document.body.appendChild(popup);
 
@@ -427,8 +585,39 @@ async function createPopup(selectedText = null) {
           return;
         }
 
+        let content;
+        // Check for user selection first
+        if (summaryDiv.dataset.selectedText) {
+          console.log('[Clariview] Using user-selected text');
+          content = summaryDiv.dataset.selectedText;
+        }
+        // If no selection and on YouTube, try transcript
+        else if (isYouTubeVideoPage()) {
+          try {
+            console.log('[Clariview] Attempting to fetch YouTube transcript');
+            const response = await chrome.runtime.sendMessage({
+              type: 'GET_YOUTUBE_TRANSCRIPT',
+              url: window.location.href
+            });
+
+            if (response && response.transcript) {
+              console.log('[Clariview] Successfully got YouTube transcript');
+              content = response.transcript;
+            } else {
+              console.log('[Clariview] No transcript available, falling back to page content');
+              content = document.body.innerText.substring(0, 4000);
+            }
+          } catch (error) {
+            console.log('[Clariview] Error fetching transcript, falling back to page content:', error);
+            content = document.body.innerText.substring(0, 4000);
+          }
+        } else {
+          // Not YouTube or no transcript available
+          content = document.body.innerText.substring(0, 4000);
+        }
+
         const pageContent = {
-          content: selectedText || document.body.innerText.substring(0, 4000),
+          content,
           title: document.title,
           url: window.location.href
         };
@@ -511,16 +700,15 @@ async function createPopup(selectedText = null) {
       const tabContents = popup.querySelectorAll('.tab-content');
       tabContents.forEach(content => content.classList.remove('active'));
       popup.querySelector(`#${tab.dataset.tab}-tab`).classList.add('active');
-    });
-  });
 
-  // Auto-summarize when opening summary tab
-  const summaryTab = popup.querySelector('[data-tab="summary"]');
-  summaryTab.addEventListener('click', () => {
-    const summaryDiv = popup.querySelector('#summary');
-    if (!summaryDiv.textContent) {
-      summarizeContent();
-    }
+      // Auto-summarize when opening summary tab
+      if (tab.dataset.tab === 'summary') {
+        const summaryDiv = popup.querySelector('#summary');
+        if (!summaryDiv.textContent) {
+          summarizeContent();
+        }
+      }
+    });
   });
 
   // Handle chat functionality
@@ -571,7 +759,16 @@ async function createPopup(selectedText = null) {
   }
 
   sendButton.addEventListener('click', sendChatMessage);
-  chatInput.addEventListener('keypress', (e) => {
+
+  // Add auto-expanding textarea functionality
+  const textarea = popup.querySelector('#chat-input');
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+  });
+
+  // Update Enter key handling for textarea
+  textarea.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendChatMessage();
@@ -629,8 +826,10 @@ async function createSidebar(selectedText = null) {
     <div class="tab-content" id="chat-tab">
       <div class="chat-messages"></div>
       <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Ask a question about the page...">
-        <button id="send-chat">Send</button>
+        <div class="chat-input-container">
+          <textarea id="chat-input" placeholder="Ask a question about the page..." rows="1"></textarea>
+          <button id="send-chat">Send</button>
+        </div>
       </div>
     </div>
   `;
@@ -778,7 +977,16 @@ async function createSidebar(selectedText = null) {
   }
 
   sendButton.addEventListener('click', sendChatMessage);
-  chatInput.addEventListener('keypress', (e) => {
+
+  // Add auto-expanding textarea functionality
+  const textarea = sidebar.querySelector('#chat-input');
+  textarea.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+  });
+
+  // Update Enter key handling for textarea
+  textarea.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendChatMessage();
@@ -806,8 +1014,39 @@ async function createSidebar(selectedText = null) {
           return;
         }
 
+        let content;
+        // Check for user selection first
+        if (summaryDiv.dataset.selectedText) {
+          console.log('[Clariview] Using user-selected text');
+          content = summaryDiv.dataset.selectedText;
+        }
+        // If no selection and on YouTube, try transcript
+        else if (isYouTubeVideoPage()) {
+          try {
+            console.log('[Clariview] Attempting to fetch YouTube transcript');
+            const response = await chrome.runtime.sendMessage({
+              type: 'GET_YOUTUBE_TRANSCRIPT',
+              url: window.location.href
+            });
+
+            if (response && response.transcript) {
+              console.log('[Clariview] Successfully got YouTube transcript');
+              content = response.transcript;
+            } else {
+              console.log('[Clariview] No transcript available, falling back to page content');
+              content = document.body.innerText.substring(0, 4000);
+            }
+          } catch (error) {
+            console.log('[Clariview] Error fetching transcript, falling back to page content:', error);
+            content = document.body.innerText.substring(0, 4000);
+          }
+        } else {
+          // Not YouTube or no transcript available
+          content = document.body.innerText.substring(0, 4000);
+        }
+
         const pageContent = {
-          content: selectedText || document.body.innerText.substring(0, 4000),
+          content,
           title: document.title,
           url: window.location.href
         };
@@ -1030,8 +1269,39 @@ async function summarizeContent() {
         return;
       }
 
+      let content;
+      // Check for user selection first
+      if (summaryDiv.dataset.selectedText) {
+        console.log('[Clariview] Using user-selected text');
+        content = summaryDiv.dataset.selectedText;
+      }
+      // If no selection and on YouTube, try transcript
+      else if (isYouTubeVideoPage()) {
+        try {
+          console.log('[Clariview] Attempting to fetch YouTube transcript');
+          const response = await chrome.runtime.sendMessage({
+            type: 'GET_YOUTUBE_TRANSCRIPT',
+            url: window.location.href
+          });
+
+          if (response && response.transcript) {
+            console.log('[Clariview] Successfully got YouTube transcript');
+            content = response.transcript;
+          } else {
+            console.log('[Clariview] No transcript available, falling back to page content');
+            content = document.body.innerText.substring(0, 4000);
+          }
+        } catch (error) {
+          console.log('[Clariview] Error fetching transcript, falling back to page content:', error);
+          content = document.body.innerText.substring(0, 4000);
+        }
+      } else {
+        // Not YouTube or no transcript available
+        content = document.body.innerText.substring(0, 4000);
+      }
+
       const pageContent = {
-        content: summaryDiv.dataset.selectedText || document.body.innerText.substring(0, 4000),
+        content,
         title: document.title,
         url: window.location.href
       };
