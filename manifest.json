@@ -13,16 +13,26 @@
     "activeTab",
     "storage",
     "scripting",
-    "clipboardWrite",
     "contextMenus"
+  ],
+  "host_permissions": [
+    "https://*.openai.com/*",
+    "https://*.anthropic.com/*",
+    "https://*.youtube.com/*",
+    "https://www.youtube.com/*",
+    "https://youtube.com/*"
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
       "js": [
         "marked.min.js",
         "content-script.js"
       ],
+      "css": ["content-styles.css"],
       "run_at": "document_end"
     }
   ],
@@ -40,8 +50,9 @@
       "sidebar.js",
       "popup.html",
       "injected-popup.css",
-      "content-styles.css"
+      "content-styles.css",
+      "src/lib/youtube.js"
     ],
-    "matches": ["<all_urls>"]
+    "matches": ["https://*.youtube.com/*", "https://youtube.com/*"]
   }]
 } 

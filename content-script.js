@@ -1,3 +1,221 @@
+// Function to check if we're on a YouTube video page
+function isYouTubeVideoPage() {
+  return window.location.hostname === 'www.youtube.com' && 
+         window.location.pathname === '/watch';
+}
+
+// Function to wait for the menu container
+function waitForMenu() {
+  return new Promise((resolve) => {
+    const checkMenu = () => {
+      const menuContainer = document.querySelector('#top-level-buttons-computed');
+      if (menuContainer) {
+        resolve(menuContainer);
+      } else {
+        setTimeout(checkMenu, 100);
+      }
+    };
+    checkMenu();
+  });
+}
+
+// Function to insert the summary button
+async function insertSummaryButton() {
+  try {
+    const menuContainer = await waitForMenu();
+    
+    // Clean up any existing buttons
+    const existingButtons = document.querySelectorAll('.clariview-summary-btn');
+    existingButtons.forEach(btn => btn.remove());
+
+    // Check if button already exists
+    if (menuContainer.querySelector('.clariview-summary-btn')) {
+      return;
+    }
+
+    // Create button element
+    const button = document.createElement('button');
+    button.className = 'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m clariview-summary-btn';
+    button.setAttribute('aria-label', 'Summarize video with AI');
+    button.innerHTML = `<span>Summarize!</span>`;
+
+    // Add custom styles
+    if (!document.getElementById('clariview-button-style')) {
+      const style = document.createElement('style');
+      style.id = 'clariview-button-style';
+      style.textContent = `
+        .clariview-summary-btn {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          background-color: #3B82F6 !important; /* Light blue color */
+          color: #FFFFFF !important;
+          border: none !important;
+          border-radius: 18px !important;
+          padding: 0 16px !important;
+          height: 36px !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          cursor: pointer !important;
+          margin: 0 4px !important;
+          transition: opacity 0.2s ease !important;
+          min-width: 100px !important;
+        }
+        .clariview-summary-btn:hover {
+          opacity: 0.85 !important;
+          background-color: #2563EB !important; /* Slightly darker on hover */
+        }
+        .clariview-summary-btn.loading {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+        .loading-spinner {
+          width: 20px !important;
+          height: 20px !important;
+          border: 2px solid #ffffff !important;
+          border-radius: 50% !important;
+          border-top-color: transparent !important;
+          animation: spin 1s linear infinite !important;
+          margin-right: 8px !important;
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Add click handler
+    button.addEventListener('click', async () => {
+      if (button.classList.contains('loading')) return;
+      
+      button.classList.add('loading');
+      const originalContent = button.innerHTML;
+      button.innerHTML = `
+        <div class="loading-spinner"></div>
+        <span>Loading...</span>
+      `;
+
+      try {
+        console.log('[Clariview] Sending transcript request for URL:', window.location.href);
+        
+        // Send message to background script to get transcript
+        const response = await chrome.runtime.sendMessage({
+          type: 'GET_YOUTUBE_TRANSCRIPT',
+          url: window.location.href
+        });
+
+        console.log('[Clariview] Received response from background script:', response);
+
+        if (!response) {
+          throw new Error('No response received from background script');
+        }
+
+        if (response.error) {
+          throw new Error(response.error);
+        }
+
+        if (response.transcript) {
+          console.log('[Clariview] Successfully received transcript, length:', response.transcript.length);
+          const event = new CustomEvent('create-clariview-popup', {
+            detail: { selectedText: response.transcript }
+          });
+          document.dispatchEvent(event);
+        } else {
+          throw new Error('No transcript available for this video');
+        }
+      } catch (error) {
+        console.error('[Clariview] Transcript fetch error:', {
+          error,
+          errorMessage: error.message,
+          errorStack: error.stack,
+          url: window.location.href
+        });
+        alert(`Failed to get transcript: ${error.message}`);
+      } finally {
+        button.classList.remove('loading');
+        button.innerHTML = originalContent;
+      }
+    });
+
+    // Insert the button after the like/dislike buttons
+    const likeDislikeButton = menuContainer.querySelector('segmented-like-dislike-button-view-model');
+    if (likeDislikeButton) {
+      likeDislikeButton.insertAdjacentElement('afterend', button);
+      console.log('[Clariview] Button inserted after like/dislike buttons', {
+        buttonElement: button,
+        insertedAfter: likeDislikeButton,
+        location: 'afterend'
+      });
+    } else {
+      menuContainer.insertBefore(button, menuContainer.firstChild);
+      console.log('[Clariview] Button inserted at start of menu', {
+        buttonElement: button,
+        menuContainer,
+        location: 'start'
+      });
+    }
+
+    console.log('[Clariview] Summary button insertion complete', {
+      url: window.location.href,
+      menuContainer,
+      buttonExists: !!document.querySelector('.clariview-summary-btn'),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Clariview] Error inserting summary button:', {
+      error,
+      url: window.location.href,
+      menuExists: !!document.querySelector('#top-level-buttons-computed'),
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+function init() {
+  if (isYouTubeVideoPage()) {
+    insertSummaryButton();
+    setupYouTubeNavigation();
+  }
+}
+
+// Handle YouTube's SPA navigation
+function setupYouTubeNavigation() {
+  let lastUrl = window.location.href;
+  
+  // Create a MutationObserver to watch for URL changes
+  const observer = new MutationObserver(() => {
+    if (window.location.href !== lastUrl) {
+      lastUrl = window.location.href;
+      if (isYouTubeVideoPage()) {
+        insertSummaryButton();
+      }
+    }
+  });
+
+  // Start observing
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+// Also watch for future navigation events
+window.addEventListener('yt-navigate-finish', () => {
+  if (isYouTubeVideoPage()) {
+    insertSummaryButton();
+  }
+});
+
 async function loadStyles() {
   const styleId = 'clariview-styles';
   let styleElement = document.getElementById(styleId);
@@ -813,7 +1031,7 @@ async function summarizeContent() {
       }
 
       const pageContent = {
-        content: selectedText || document.body.innerText.substring(0, 4000),
+        content: summaryDiv.dataset.selectedText || document.body.innerText.substring(0, 4000),
         title: document.title,
         url: window.location.href
       };
