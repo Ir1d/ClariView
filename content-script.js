@@ -362,7 +362,6 @@ async function createPopup(selectedText = null) {
         z-index: 9999;
         font-family: system-ui, -apple-system, sans-serif;
         font-size: 16px;
-        line-height: 1.5;
       }
       #clariview-popup .titlebar {
         display: flex;
@@ -445,10 +444,11 @@ async function createPopup(selectedText = null) {
         display: block;
       }
       #clariview-popup #summary {
-        margin-top: 16px;
-        white-space: pre-wrap;
-        font-size: 16px;
-        line-height: 1.6;
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          padding: 10px;
+          margin: 0;
       }
       #clariview-popup .chat-messages {
         height: 300px;
@@ -476,7 +476,6 @@ async function createPopup(selectedText = null) {
         min-height: 40px;
         max-height: 200px;
         overflow-y: auto;
-        line-height: 1.5;
         font-family: inherit;
       }
       #clariview-popup .chat-input textarea:focus {
