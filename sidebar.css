@@ -2,15 +2,18 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 300px;
+  width: 450px;
   height: 100vh;
   background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  z-index: 9999;
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+  z-index: 999998;
+  padding: 10px;
+  font-family: Arial, sans-serif;
   transition: transform 0.3s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #clariview-sidebar.collapsed {
@@ -20,54 +23,63 @@
 #clariview-toggle {
   position: fixed;
   top: 50%;
-  right: 300px;
+  right: 450px;
   transform: translateY(-50%);
-  z-index: 10000;
+  z-index: 999998;
   padding: 8px;
-  background: #f0f0f0;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
+  background: white;
+  border: 1px solid #ccc;
   border-right: none;
-  cursor: pointer;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
   border-radius: 4px 0 0 4px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: right 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
+#clariview-toggle .toggle-icon {
+  width: 20px;
+  height: 20px;
+  stroke: #666;
+  transition: transform 0.3s ease;
 }
 
 #clariview-toggle:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: #f8f8f8;
+}
+
+#clariview-sidebar.collapsed + #clariview-toggle {
+  right: 0;
 }
 
 #clariview-sidebar .titlebar {
+  margin: -10px -10px 10px -10px;
+  padding: 8px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ccc;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid #e5e7eb;
-  cursor: grab;
+  align-items: center;
   user-select: none;
-  background: white;
-}
-
-#clariview-sidebar .titlebar span {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
 }
 
 #clariview-sidebar .content {
-  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  margin: -10px;
+  position: relative;
 }
 
 #clariview-sidebar button {
-  padding: 8px 16px;
-  background: #3B82F6;
-  border: none;
-  border-radius: 6px;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
   cursor: pointer;
-  color: white;
-  transition: all 0.2s ease;
 }
 
 #clariview-sidebar input,
@@ -93,14 +105,14 @@
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   background: white;
-  color: #3B82F6;
+  /* color: #3B82F6; */
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
-#clariview-sidebar select:hover {
+/* #clariview-sidebar select:hover {
   border-color: #3B82F6;
-}
+} */
 
 #clariview-sidebar ::-webkit-scrollbar {
   width: 8px;
@@ -119,10 +131,177 @@
   background: #2563EB;
 }
 
-/* Primary button style - matches popup */
+#clariview-sidebar .tabs {
+  display: flex;
+  padding: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+#clariview-sidebar .tab-content {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px;
+}
+
+#clariview-sidebar .tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+
+#clariview-sidebar #chat-tab {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+#clariview-sidebar #chat-tab.active {
+  display: flex;
+}
+
+#clariview-sidebar .chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  margin: 0;
+}
+
+#clariview-sidebar .chat-input {
+  padding: 10px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  margin: 0;
+}
+
+#clariview-sidebar .chat-input-container {
+  display: flex;
+  gap: 8px;
+}
+
+#clariview-sidebar .chat-input textarea {
+  flex: 1;
+  min-height: unset;
+  margin: 0;
+  resize: none;
+}
+
+#clariview-sidebar .chat-input button {
+  width: auto;
+  margin: 0;
+  white-space: nowrap;
+  padding: 8px 16px;
+}
+
+#clariview-sidebar #summary-tab {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#clariview-sidebar #summary-tab.active {
+  display: flex;
+}
+
+#clariview-sidebar #summary {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  margin: 0;
+}
+
+#clariview-sidebar textarea {
+  width: 100%;
+  min-height: 100px;
+  max-height: 200px;
+  resize: vertical;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+#clariview-sidebar #summary h1,
+#clariview-sidebar #summary h2,
+#clariview-sidebar #summary h3,
+#clariview-sidebar #summary h4 {
+  margin-top: 0.7em;
+  margin-bottom: 0.3em;
+  font-weight: 600;
+}
+
+#clariview-sidebar #summary p {
+  margin: 0.3em 0;
+}
+
+#clariview-sidebar #summary ul,
+#clariview-sidebar #summary ol {
+  margin: 0.3em 0;
+  padding-left: 2em;
+}
+
+#clariview-sidebar #summary li {
+  margin: 0.1em 0;
+}
+
+#clariview-sidebar #summary code {
+  background: #f0f0f0;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+#clariview-sidebar #summary pre {
+  background: #f0f0f0;
+  padding: 1em;
+  border-radius: 3px;
+  overflow-x: auto;
+}
+
+#clariview-sidebar #summary blockquote {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  border-left: 3px solid #ddd;
+  color: #666;
+}
+
+/* Add transition for smooth webpage adjustment */
+body.with-sidebar {
+  margin-right: 450px;
+  transition: margin-right 0.3s ease;
+}
+
+body.with-sidebar-collapsed {
+  margin-right: 0;
+}
+
+/* Primary button style */
 #clariview-sidebar .primary-button,
 #clariview-sidebar #summarize {
   width: 100%;
+  padding: 12px;
+  background: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  display: block;
+  margin: 10px 0;
+}
+#clariview-sidebar #send-chat {
   padding: 12px;
   background: #3B82F6;
   color: white;
@@ -140,22 +319,12 @@
   background: #2563EB;
 }
 
-/* Ensure the summarize button specifically gets the styles */
-#summarize.primary-button {
-  background: #3B82F6;
-  color: white;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  display: block;
-  margin: 10px 0;
+#clariview-sidebar .actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Action buttons (retry and copy) */
 #clariview-sidebar .icon-button {
   display: flex;
   align-items: center;
@@ -163,8 +332,8 @@
   padding: 8px;
   width: 36px;
   height: 36px;
-  border: 1px solid #e5e7eb;
-  background: white;
+  border: none;
+  background: none;
   cursor: pointer;
   border-radius: 6px;
   color: #6b7280;
@@ -172,34 +341,14 @@
   margin: 0;
 }
 
-/* #clariview-sidebar .icon-button:hover {
-  border-color: #3B82F6;
-  color: #3B82F6;
-  background: #f8fafc;
-} */
-
-/* Chat input and send button */
-#clariview-sidebar #send-chat {
-  width: 25%;
-  padding: 8px;
-  background: #3B82F6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s ease;
+#clariview-sidebar .icon-button:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
-#clariview-sidebar #send-chat:hover {
-  background: #2563EB;
-}
-
-#clariview-sidebar .tabs {
-  display: flex;
-  padding: 0 10px;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
+#clariview-sidebar .icon-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 #clariview-sidebar .tab {

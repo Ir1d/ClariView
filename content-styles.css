@@ -103,226 +103,15 @@
   background: linear-gradient(135deg, transparent 50%, #ccc 50%);
 }
 
-#clariview-sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 450px;
-  height: 100vh;
-  background: white;
-  border-left: 1px solid #ccc;
-  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-  z-index: 999998;
-  padding: 10px;
-  font-family: Arial, sans-serif;
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#clariview-sidebar .tab-content {
-  display: none;
-  padding: 10px 0;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-#clariview-sidebar .tab-content.active {
-  display: flex;
-  flex-direction: column;
-}
-
-#clariview-sidebar #chat-tab {
-  position: relative;
-  display: none;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-#clariview-sidebar #chat-tab.active {
-  display: flex;
-  flex-direction: column;
-}
-
-#clariview-sidebar .chat-messages {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 10px;
-  margin-bottom: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-#clariview-sidebar .chat-input {
-  flex-shrink: 0;
-  background: white;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
-  display: flex;
-  gap: 8px;
-  margin-bottom: 0;
-}
-
-/* Add transition for smooth webpage adjustment */
-body.with-sidebar {
-  margin-right: 450px;
-  transition: margin-right 0.3s ease;
-}
-
-body.with-sidebar-collapsed {
-  margin-right: 0;
-}
-
-#clariview-sidebar.collapsed {
-  transform: translateX(100%);
-}
-
-#clariview-toggle {
-  position: fixed;
-  top: 50%;
-  right: 450px;
-  transform: translateY(-50%);
-  z-index: 999998;
-  padding: 8px;
-  background: white;
-  border: 1px solid #ccc;
-  border-right: none;
-  border-radius: 4px 0 0 4px;
-  cursor: pointer;
-  transition: right 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-}
-
-#clariview-toggle .toggle-icon {
-  width: 20px;
-  height: 20px;
-  stroke: #666;
-  transition: transform 0.3s ease;
-}
-
-#clariview-toggle:hover {
-  background: #f8f8f8;
-}
-
-#clariview-sidebar.collapsed + #clariview-toggle {
-  right: 0;
-}
-
-#clariview-sidebar #summary {
-  min-height: 100px;
-  max-height: calc(100vh - 100px);
-  overflow-y: auto;
-  margin-top: 10px;
-  padding-right: 10px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.4;
-}
-
-#clariview-sidebar #summary h1,
-#clariview-sidebar #summary h2,
-#clariview-sidebar #summary h3,
-#clariview-sidebar #summary h4 {
-  margin-top: 0.7em;
-  margin-bottom: 0.3em;
-  font-weight: 600;
-}
-
-#clariview-sidebar #summary p {
-  margin: 0.3em 0;
-}
-
-#clariview-sidebar #summary ul,
-#clariview-sidebar #summary ol {
-  margin: 0.3em 0;
-  padding-left: 2em;
-}
-
-#clariview-sidebar #summary li {
-  margin: 0.1em 0;
-}
-
-#clariview-sidebar #summary code {
-  background: #f0f0f0;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  font-family: monospace;
-}
-
-#clariview-sidebar #summary pre {
-  background: #f0f0f0;
-  padding: 1em;
-  border-radius: 3px;
-  overflow-x: auto;
-}
-
-#clariview-sidebar #summary blockquote {
-  margin: 0.5em 0;
-  padding-left: 1em;
-  border-left: 3px solid #ddd;
-  color: #666;
-}
-
-#clariview-sidebar .titlebar {
-  margin: -10px -10px 10px -10px;
-  padding: 8px;
-  background: #f0f0f0;
-  border-bottom: 1px solid #ccc;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  user-select: none;
-}
-
-#clariview-sidebar button {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.icon-button {
-  background: none;
-  border: none;
-  padding: 4px 8px;
-  cursor: pointer;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-button:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.icon-button svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-}
-
 /* Tab styles */
-.tabs {
+#clariview-popup .tabs {
   display: flex;
   margin: -10px -10px 10px -10px;
   background: #f8f8f8;
   border-bottom: 1px solid #ddd;
 }
 
-.tab {
+#clariview-popup .tab {
   padding: 8px 16px;
   cursor: pointer;
   border: none;
@@ -330,41 +119,41 @@ body.with-sidebar-collapsed {
   border-bottom: 2px solid transparent;
   color: #666;
   margin: 0;
-  width: auto;
+  width: 50%;
 }
 
-.tab.active {
+#clariview-popup .tab.active {
   border-bottom: 2px solid #3B82F6;
   color: #3B82F6;
   background: white;
 }
 
-.tab-content {
+#clariview-popup .tab-content {
   display: none;
   padding: 10px 0;
   flex: 1;
   overflow-y: auto;
 }
 
-.tab-content.active {
+#clariview-popup .tab-content.active {
   display: flex;
   flex-direction: column;
 }
 
 /* Chat styles */
-#chat-tab {
+#clariview-popup #chat-tab {
   position: relative;
   display: none;
   flex: 1;
   overflow: hidden;
 }
 
-#chat-tab.active {
+#clariview-popup #chat-tab.active {
   display: flex;
   flex-direction: column;
 }
 
-.chat-messages {
+#clariview-popup .chat-messages {
   flex: 1;
   overflow-y: auto;
   padding-right: 10px;
@@ -373,21 +162,21 @@ body.with-sidebar-collapsed {
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
-.chat-messages::-webkit-scrollbar {
+#clariview-popup .chat-messages::-webkit-scrollbar {
   width: 8px;
 }
 
-.chat-messages::-webkit-scrollbar-track {
+#clariview-popup .chat-messages::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.chat-messages::-webkit-scrollbar-thumb {
+#clariview-popup .chat-messages::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   border: 2px solid transparent;
 }
 
-.chat-input {
+#clariview-popup .chat-input {
   position: sticky;
   bottom: 0;
   background: white;
@@ -399,14 +188,14 @@ body.with-sidebar-collapsed {
   flex-shrink: 0;
 }
 
-.chat-input input {
+#clariview-popup .chat-input input {
   flex: 1;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.chat-input button {
+#clariview-popup .chat-input button {
   width: auto;
   white-space: nowrap;
   margin: 0;
@@ -419,21 +208,21 @@ body.with-sidebar-collapsed {
   transition: background-color 0.2s ease;
 }
 
-.chat-input button:hover {
+#clariview-popup .chat-input button:hover {
   background: #2563EB;
 }
 
-.chat-message {
+#clariview-popup .chat-message {
   margin-bottom: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid #eee;
 }
 
-.chat-message:last-child {
+#clariview-popup .chat-message:last-child {
   border-bottom: none;
 }
 
-.message-role {
+#clariview-popup .message-role {
   font-size: 0.8em;
   color: #666;
   margin-bottom: 4px;

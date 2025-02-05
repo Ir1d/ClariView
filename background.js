@@ -37,8 +37,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-// Existing click handler
+// Handle extension icon click
 chrome.action.onClicked.addListener((tab) => {
+  // Always create popup
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
     function: () => {
@@ -48,6 +49,18 @@ chrome.action.onClicked.addListener((tab) => {
       }
     }
   });
+
+  // Inject the content script if not already injected
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ['content-script.js']
+  }).catch(error => console.error('Failed to inject content script:', error));
+
+  // Inject the styles if not already injected
+  chrome.scripting.insertCSS({
+    target: { tabId: tab.id },
+    files: ['content-styles.css', 'sidebar.css']
+  }).catch(error => console.error('Failed to inject styles:', error));
 });
 
 // Handle YouTube transcript requests

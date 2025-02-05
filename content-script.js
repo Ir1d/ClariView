@@ -527,11 +527,31 @@ async function createPopup(selectedText = null) {
 
   // Handle display mode changes
   const displayModeSelect = popup.querySelector('#displayMode');
-  displayModeSelect.addEventListener('change', (e) => {
-    if (e.target.value === 'sidebar') {
-      const selectedText = popup.querySelector('#summary').dataset.selectedText;
-      createSidebar(selectedText);
-      popup.remove();
+  displayModeSelect.addEventListener('change', async (e) => {
+    try {
+      if (chrome.runtime?.id) {
+        if (e.target.value === 'sidebar') {
+          const selectedText = popup.querySelector('#summary').dataset.selectedText;
+          const summaryContent = popup.querySelector('#summary').innerHTML;
+          
+          // Remove popup first
+          popup.remove();
+          
+          // Create sidebar with existing content
+          await createSidebar(selectedText);
+          
+          // If there was content in the summary, transfer it to the sidebar
+          if (summaryContent && summaryContent !== 'Summarizing...') {
+            const sidebarSummary = document.querySelector('#clariview-sidebar #summary');
+            if (sidebarSummary) {
+              sidebarSummary.innerHTML = summaryContent;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[Clariview] Error changing display mode:', error);
+      cleanup();
     }
   });
 
@@ -976,16 +996,42 @@ async function createSidebar(selectedText = null) {
 
   // Handle display mode changes
   const displayModeSelect = sidebar.querySelector('#displayMode');
-  displayModeSelect.addEventListener('change', (e) => {
+  displayModeSelect.addEventListener('change', async (e) => {
     try {
       if (chrome.runtime?.id) {
         if (e.target.value === 'popup') {
           const selectedText = sidebar.querySelector('#summary').dataset.selectedText;
-          createPopup(selectedText);
+          const summaryContent = sidebar.querySelector('#summary').innerHTML;
+          
+          // Remove sidebar first
           sidebar.remove();
           toggle.remove();
           document.body.classList.remove('with-sidebar');
           document.body.classList.remove('with-sidebar-collapsed');
+          
+          // Create popup with existing content
+          await createPopup(selectedText);
+          
+          // If there was content in the summary, transfer it to the popup
+          if (summaryContent && summaryContent !== 'Summarizing...') {
+            const popupSummary = document.querySelector('#clariview-popup #summary');
+            if (popupSummary) {
+              popupSummary.innerHTML = summaryContent;
+              popupSummary.dataset.markdown = sidebar.querySelector('#summary').dataset.markdown || '';
+            }
+          }
+
+          // Transfer chat messages if any
+          const sidebarChatMessages = sidebar.querySelectorAll('.chat-message');
+          if (sidebarChatMessages.length > 0) {
+            const popupChatMessages = document.querySelector('#clariview-popup .chat-messages');
+            if (popupChatMessages) {
+              sidebarChatMessages.forEach(msg => {
+                const clone = msg.cloneNode(true);
+                popupChatMessages.appendChild(clone);
+              });
+            }
+          }
         }
       } else {
         console.warn('[Clariview] Extension context invalidated');
@@ -1529,4 +1575,120 @@ async function sendChatMessage() {
       }
     }
   );
-} 
+}
+
+// Create and handle sidebar
+document.addEventListener('create-clariview-sidebar', async () => {
+  // First inject the sidebar CSS
+  const sidebarCss = await fetch(chrome.runtime.getURL('sidebar.css'))
+    .then(response => response.text())
+    .catch(error => {
+      console.error('Failed to load sidebar.css:', error);
+      return '';
+    });
+
+  // Add the CSS to the page
+  const style = document.createElement('style');
+  style.id = 'clariview-sidebar-style';
+  style.textContent = sidebarCss;
+  document.head.appendChild(style);
+
+  // Remove existing sidebar if any
+  const existingSidebar = document.getElementById('clariview-sidebar');
+  if (existingSidebar) {
+    existingSidebar.remove();
+  }
+
+  // Create sidebar container
+  const sidebar = document.createElement('div');
+  sidebar.id = 'clariview-sidebar';
+  
+  // Create titlebar
+  const titlebar = document.createElement('div');
+  titlebar.className = 'titlebar';
+  titlebar.innerHTML = `
+    <span>ClariView</span>
+    <div class="actions">
+      <button class="icon-button" id="retry" title="Retry">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+        </svg>
+      </button>
+      <button class="icon-button" id="copy" title="Copy">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+        </svg>
+      </button>
+      <select id="displayMode">
+        <option value="sidebar">Sidebar</option>
+        <option value="popup">Popup</option>
+      </select>
+    </div>
+  `;
+
+  // Create content area
+  const content = document.createElement('div');
+  content.className = 'content';
+  content.innerHTML = `
+    <div class="tabs">
+      <button class="tab active" data-tab="summary">Summary</button>
+      <button class="tab" data-tab="chat">Chat</button>
+    </div>
+    <div class="tab-content active" id="summary-tab">
+      <textarea id="input" placeholder="Enter text to analyze..."></textarea>
+      <button id="summarize" class="primary-button">Summarize</button>
+      <div id="summary"></div>
+    </div>
+    <div class="tab-content" id="chat-tab">
+      <div class="chat-messages"></div>
+      <div class="chat-input">
+        <div class="chat-input-container">
+          <textarea id="chat-input" placeholder="Ask a question..." rows="1"></textarea>
+          <button id="send-chat">Send</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Assemble sidebar
+  sidebar.appendChild(titlebar);
+  sidebar.appendChild(content);
+  document.body.appendChild(sidebar);
+
+  // Create toggle button
+  const toggle = document.createElement('button');
+  toggle.id = 'clariview-toggle';
+  toggle.innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  `;
+
+  // Add toggle functionality
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    if (settings.adjustWebpage) {
+      document.body.style.marginRight = sidebar.classList.contains('collapsed') ? '0' : '300px';
+    }
+  });
+  document.body.appendChild(toggle);
+
+  // Handle webpage adjustment if enabled
+  chrome.storage.sync.get({ adjustWebpage: true }, (settings) => {
+    if (settings.adjustWebpage) {
+      document.body.style.marginRight = '300px';
+      sidebar.addEventListener('transitionend', () => {
+        if (sidebar.classList.contains('collapsed')) {
+          document.body.style.marginRight = '0';
+        } else {
+          document.body.style.marginRight = '300px';
+        }
+      });
+    }
+  });
+
+  // Load sidebar script
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('sidebar.js');
+  document.head.appendChild(script);
+}); 
