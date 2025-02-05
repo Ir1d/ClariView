@@ -218,20 +218,80 @@ window.addEventListener('yt-navigate-finish', () => {
 
 async function loadStyles() {
   const styleId = 'clariview-styles';
-  let styleElement = document.getElementById(styleId);
-  if (!styleElement) {
-    try {
-      const url = chrome.runtime.getURL('content-styles.css');
-      const response = await fetch(url);
-      const css = await response.text();
-      styleElement = document.createElement('style');
-      styleElement.id = styleId;
-      styleElement.textContent = css;
-      document.head.appendChild(styleElement);
-    } catch (error) {
-      console.error('Failed to load styles:', error);
-    }
+  
+  // Don't reload if already loaded
+  if (document.getElementById(styleId)) {
+    return;
   }
+
+  try {
+    // First try to use the content_scripts CSS which should be auto-injected
+    const existingStyles = document.querySelector('link[href*="content-styles.css"]');
+    if (existingStyles) {
+      return;
+    }
+
+    // Fallback: manually load the CSS
+    const url = chrome.runtime.getURL('content-styles.css');
+    const link = document.createElement('link');
+    link.id = styleId;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = url;
+    
+    // Add load event listener
+    link.addEventListener('load', () => {
+      console.log('[Clariview] Styles loaded successfully');
+    });
+    
+    // Add error event listener
+    link.addEventListener('error', (error) => {
+      console.error('[Clariview] Failed to load styles:', error);
+      // Fallback to inline styles if needed
+      applyFallbackStyles();
+    });
+
+    document.head.appendChild(link);
+  } catch (error) {
+    console.error('[Clariview] Error in loadStyles:', error);
+    // Fallback to inline styles if needed
+    applyFallbackStyles();
+  }
+}
+
+function applyFallbackStyles() {
+  const styleId = 'clariview-fallback-styles';
+  if (document.getElementById(styleId)) {
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    /* Essential fallback styles */
+    .clariview-summary-btn {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background-color: #3B82F6 !important;
+      color: #FFFFFF !important;
+      border: none !important;
+      border-radius: 18px !important;
+      padding: 0 16px !important;
+      height: 36px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      margin: 0 4px !important;
+      transition: opacity 0.2s ease !important;
+      min-width: 100px !important;
+    }
+    .clariview-summary-btn:hover {
+      opacity: 0.85 !important;
+      background-color: #2563EB !important;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 async function createPopup(selectedText = null) {
@@ -320,27 +380,42 @@ async function createPopup(selectedText = null) {
       }
       #clariview-popup .actions {
         display: flex;
-        gap: 8px;
+        gap: 12px;
         align-items: center;
       }
       #clariview-popup .icon-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         padding: 8px;
+        width: 36px;
+        height: 36px;
         border: none;
         background: none;
         cursor: pointer;
         border-radius: 6px;
         color: #6b7280;
+        transition: all 0.2s ease;
+        margin: 0;
       }
       #clariview-popup .icon-button:hover {
         background: #f3f4f6;
         color: #111827;
       }
+      #clariview-popup .icon-button svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+        margin: 0;
+      }
       #clariview-popup select {
-        padding: 6px 12px;
+        padding: 8px 12px;
+        height: 36px;
         border-radius: 6px;
         border: 1px solid #e5e7eb;
         font-size: 14px;
         cursor: pointer;
+        background-color: white;
       }
       #clariview-popup .tabs {
         display: flex;
@@ -776,14 +851,41 @@ async function createPopup(selectedText = null) {
   });
 
   // Auto-summarize on creation if needed
-  chrome.storage.sync.get(['autoSummarize'], function(settings) {
-    if (selectedText || settings.autoSummarize) {
-      summarizeContent();
+  try {
+    if (chrome.runtime?.id) { // Check if extension context is still valid
+      chrome.storage.sync.get(['autoSummarize'], function(settings) {
+        if (chrome.runtime?.lastError) {
+          console.error('[Clariview] Storage error:', chrome.runtime.lastError);
+          return;
+        }
+        
+        if (selectedText || settings.autoSummarize) {
+          summarizeContent();
+        }
+      });
+    } else {
+      console.warn('[Clariview] Extension context invalidated');
+      cleanup(); // Clean up any existing elements
     }
-  });
+  } catch (error) {
+    console.error('[Clariview] Error in auto-summarize:', error);
+    cleanup(); // Clean up any existing elements
+  }
 }
 
 async function createSidebar(selectedText = null) {
+  // First load the sidebar CSS
+  const sidebarStyleId = 'clariview-sidebar-styles';
+  if (!document.getElementById(sidebarStyleId)) {
+    const sidebarCssUrl = chrome.runtime.getURL('sidebar.css');
+    const link = document.createElement('link');
+    link.id = sidebarStyleId;
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = sidebarCssUrl;
+    document.head.appendChild(link);
+  }
+
   // Remove existing popup or sidebar if any
   const existingPopup = document.getElementById('clariview-popup');
   const existingSidebar = document.getElementById('clariview-sidebar');
@@ -797,15 +899,15 @@ async function createSidebar(selectedText = null) {
   sidebar.id = 'clariview-sidebar';
   sidebar.innerHTML = `
     <div class="titlebar">
-      <span>LLM Helper</span>
+      <span>ClariView</span>
       <div class="actions">
         <button class="icon-button" id="retry" title="Retry">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
           </svg>
         </button>
         <button class="icon-button" id="copy" title="Copy">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
           </svg>
         </button>
@@ -827,7 +929,7 @@ async function createSidebar(selectedText = null) {
       <div class="chat-messages"></div>
       <div class="chat-input">
         <div class="chat-input-container">
-          <textarea id="chat-input" placeholder="Ask a question about the page..." rows="1"></textarea>
+          <textarea id="chat-input" placeholder="Ask a question..." rows="1"></textarea>
           <button id="send-chat">Send</button>
         </div>
       </div>
@@ -837,11 +939,21 @@ async function createSidebar(selectedText = null) {
   document.body.appendChild(sidebar);
 
   // Add margin to webpage
-  chrome.storage.sync.get(['adjustWebpage'], function(data) {
-    if (data.adjustWebpage ?? true) { // Default to true if not set
-      document.body.classList.add('with-sidebar');
+  try {
+    if (chrome.runtime?.id) {
+      chrome.storage.sync.get(['adjustWebpage'], function(data) {
+        if (chrome.runtime?.lastError) {
+          console.error('[Clariview] Storage error:', chrome.runtime.lastError);
+          return;
+        }
+        if (data.adjustWebpage ?? true) { // Default to true if not set
+          document.body.classList.add('with-sidebar');
+        }
+      });
     }
-  });
+  } catch (error) {
+    console.error('[Clariview] Error adjusting webpage:', error);
+  }
 
   // Create toggle button
   const toggle = document.createElement('button');
@@ -865,13 +977,23 @@ async function createSidebar(selectedText = null) {
   // Handle display mode changes
   const displayModeSelect = sidebar.querySelector('#displayMode');
   displayModeSelect.addEventListener('change', (e) => {
-    if (e.target.value === 'popup') {
-      const selectedText = sidebar.querySelector('#summary').dataset.selectedText;
-      createPopup(selectedText);
-      sidebar.remove();
-      toggle.remove();
-      document.body.classList.remove('with-sidebar');
-      document.body.classList.remove('with-sidebar-collapsed');
+    try {
+      if (chrome.runtime?.id) {
+        if (e.target.value === 'popup') {
+          const selectedText = sidebar.querySelector('#summary').dataset.selectedText;
+          createPopup(selectedText);
+          sidebar.remove();
+          toggle.remove();
+          document.body.classList.remove('with-sidebar');
+          document.body.classList.remove('with-sidebar-collapsed');
+        }
+      } else {
+        console.warn('[Clariview] Extension context invalidated');
+        cleanup();
+      }
+    } catch (error) {
+      console.error('[Clariview] Error changing display mode:', error);
+      cleanup();
     }
   });
 
@@ -994,96 +1116,127 @@ async function createSidebar(selectedText = null) {
   });
 
   // Auto-summarize on creation if needed
-  chrome.storage.sync.get(['autoSummarize'], function(settings) {
-    if (selectedText || settings.autoSummarize) {
-      summarizeContent();
+  try {
+    if (chrome.runtime?.id) { // Check if extension context is still valid
+      chrome.storage.sync.get(['autoSummarize'], function(settings) {
+        if (chrome.runtime?.lastError) {
+          console.error('[Clariview] Storage error:', chrome.runtime.lastError);
+          return;
+        }
+        
+        if (selectedText || settings.autoSummarize) {
+          summarizeContent();
+        }
+      });
+    } else {
+      console.warn('[Clariview] Extension context invalidated');
+      cleanup(); // Clean up any existing elements
     }
-  });
+  } catch (error) {
+    console.error('[Clariview] Error in auto-summarize:', error);
+    cleanup(); // Clean up any existing elements
+  }
 
   // Handle summarize button click
   summarizeBtn.addEventListener('click', async () => {
     const summaryDiv = sidebar.querySelector('#summary');
     summaryDiv.textContent = 'Summarizing...';
 
-    // Get settings from storage
-    chrome.storage.sync.get(
-      ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
-      async function(settings) {
-        if (!settings.apiKey) {
-          summaryDiv.textContent = 'Please set your API key in the options page.';
-          return;
-        }
+    try {
+      if (!chrome.runtime?.id) {
+        throw new Error('Extension context invalidated');
+      }
 
-        let content;
-        // Check for user selection first
-        if (summaryDiv.dataset.selectedText) {
-          console.log('[Clariview] Using user-selected text');
-          content = summaryDiv.dataset.selectedText;
-        }
-        // If no selection and on YouTube, try transcript
-        else if (isYouTubeVideoPage()) {
-          try {
-            console.log('[Clariview] Attempting to fetch YouTube transcript');
-            const response = await chrome.runtime.sendMessage({
-              type: 'GET_YOUTUBE_TRANSCRIPT',
-              url: window.location.href
-            });
+      // Get settings from storage
+      chrome.storage.sync.get(
+        ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
+        async function(settings) {
+          if (chrome.runtime?.lastError) {
+            console.error('[Clariview] Storage error:', chrome.runtime.lastError);
+            summaryDiv.textContent = 'Error loading settings: ' + chrome.runtime.lastError.message;
+            return;
+          }
 
-            if (response && response.transcript) {
-              console.log('[Clariview] Successfully got YouTube transcript');
-              content = response.transcript;
-            } else {
-              console.log('[Clariview] No transcript available, falling back to page content');
+          if (!settings.apiKey) {
+            summaryDiv.textContent = 'Please set your API key in the options page.';
+            return;
+          }
+
+          let content;
+          // Check for user selection first
+          if (summaryDiv.dataset.selectedText) {
+            console.log('[Clariview] Using user-selected text');
+            content = summaryDiv.dataset.selectedText;
+          }
+          // If no selection and on YouTube, try transcript
+          else if (isYouTubeVideoPage()) {
+            try {
+              console.log('[Clariview] Attempting to fetch YouTube transcript');
+              const response = await chrome.runtime.sendMessage({
+                type: 'GET_YOUTUBE_TRANSCRIPT',
+                url: window.location.href
+              });
+
+              if (response && response.transcript) {
+                console.log('[Clariview] Successfully got YouTube transcript');
+                content = response.transcript;
+              } else {
+                console.log('[Clariview] No transcript available, falling back to page content');
+                content = document.body.innerText.substring(0, 4000);
+              }
+            } catch (error) {
+              console.log('[Clariview] Error fetching transcript, falling back to page content:', error);
               content = document.body.innerText.substring(0, 4000);
             }
-          } catch (error) {
-            console.log('[Clariview] Error fetching transcript, falling back to page content:', error);
+          } else {
+            // Not YouTube or no transcript available
             content = document.body.innerText.substring(0, 4000);
           }
-        } else {
-          // Not YouTube or no transcript available
-          content = document.body.innerText.substring(0, 4000);
+
+          const pageContent = {
+            content,
+            title: document.title,
+            url: window.location.href
+          };
+
+          const processedPrompt = settings.userPrompt
+            .replace('{{content}}', pageContent.content)
+            .replace('{{url}}', pageContent.url)
+            .replace('{{title}}', pageContent.title)
+            .replace('{{selected_language}}', settings.language);
+
+          try {
+            const messages = [
+              {
+                role: "system",
+                content: settings.systemMessage
+              },
+              {
+                role: "user",
+                content: processedPrompt
+              }
+            ];
+
+            const content = await callLLMApi(settings, messages);
+            
+            // Store the raw markdown
+            summaryDiv.dataset.markdown = content;
+            // Render markdown content
+            summaryDiv.innerHTML = marked.parse(content, {
+              gfm: true,
+              breaks: true,
+              sanitize: true
+            });
+          } catch (error) {
+            summaryDiv.textContent = `Error: ${error.message}`;
+          }
         }
-
-        const pageContent = {
-          content,
-          title: document.title,
-          url: window.location.href
-        };
-
-        const processedPrompt = settings.userPrompt
-          .replace('{{content}}', pageContent.content)
-          .replace('{{url}}', pageContent.url)
-          .replace('{{title}}', pageContent.title)
-          .replace('{{selected_language}}', settings.language);
-
-        try {
-          const messages = [
-            {
-              role: "system",
-              content: settings.systemMessage
-            },
-            {
-              role: "user",
-              content: processedPrompt
-            }
-          ];
-
-          const content = await callLLMApi(settings, messages);
-          
-          // Store the raw markdown
-          summaryDiv.dataset.markdown = content;
-          // Render markdown content
-          summaryDiv.innerHTML = marked.parse(content, {
-            gfm: true,
-            breaks: true,
-            sanitize: true
-          });
-        } catch (error) {
-          summaryDiv.textContent = `Error: ${error.message}`;
-        }
-      }
-    );
+      );
+    } catch (error) {
+      console.error('[Clariview] Error in summarize:', error);
+      summaryDiv.textContent = 'Error: ' + error.message;
+      cleanup();
+    }
   });
 }
 

@@ -53,6 +53,6 @@
       "content-styles.css",
       "src/lib/youtube.js"
     ],
-    "matches": ["https://*.youtube.com/*", "https://youtube.com/*"]
+    "matches": ["<all_urls>"]
   }]
 } 

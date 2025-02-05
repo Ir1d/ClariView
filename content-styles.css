@@ -334,8 +334,8 @@ body.with-sidebar-collapsed {
 }
 
 .tab.active {
-  border-bottom: 2px solid #4CAF50;
-  color: #4CAF50;
+  border-bottom: 2px solid #3B82F6;
+  color: #3B82F6;
   background: white;
 }
 
@@ -349,21 +349,6 @@ body.with-sidebar-collapsed {
 .tab-content.active {
   display: flex;
   flex-direction: column;
-}
-
-.primary-button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  cursor: pointer;
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.primary-button:hover {
-  background: #45a049;
 }
 
 /* Chat styles */
@@ -425,10 +410,17 @@ body.with-sidebar-collapsed {
   width: auto;
   white-space: nowrap;
   margin: 0;
-  background: #4CAF50;
+  background: #3B82F6;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.chat-input button:hover {
+  background: #2563EB;
 }
 
 .chat-message {
