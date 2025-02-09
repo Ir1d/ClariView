@@ -48,7 +48,7 @@ async function insertSummaryButton() {
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          background-color: #3B82F6 !important; /* Light blue color */
+          background-color: #3B82F6 !important;
           color: #FFFFFF !important;
           border: none !important;
           border-radius: 18px !important;
@@ -60,16 +60,20 @@ async function insertSummaryButton() {
           margin: 0 4px !important;
           transition: opacity 0.2s ease !important;
           min-width: 100px !important;
+          text-transform: none !important;
+          font-family: inherit !important;
+          line-height: normal !important;
+          box-shadow: none !important;
         }
         .clariview-summary-btn:hover {
           opacity: 0.85 !important;
-          background-color: #2563EB !important; /* Slightly darker on hover */
+          background-color: #2563EB !important;
         }
         .clariview-summary-btn.loading {
-          opacity: 0.7;
-          cursor: not-allowed;
+          opacity: 0.7 !important;
+          cursor: not-allowed !important;
         }
-        .loading-spinner {
+        .clariview-loading-spinner {
           width: 20px !important;
           height: 20px !important;
           border: 2px solid #ffffff !important;
@@ -77,6 +81,8 @@ async function insertSummaryButton() {
           border-top-color: transparent !important;
           animation: spin 1s linear infinite !important;
           margin-right: 8px !important;
+          min-width: unset !important;
+          min-height: unset !important;
         }
         @keyframes spin {
           to {
@@ -94,7 +100,7 @@ async function insertSummaryButton() {
       button.classList.add('loading');
       const originalContent = button.innerHTML;
       button.innerHTML = `
-        <div class="loading-spinner"></div>
+        <div class="clariview-loading-spinner"></div>
         <span>Loading...</span>
       `;
 
@@ -307,43 +313,43 @@ async function createPopup(selectedText = null) {
   const popup = document.createElement('div');
   popup.id = 'clariview-popup';
   popup.innerHTML = `
-    <div class="titlebar">
+    <div class="clariview-titlebar">
       <span>ClariView</span>
-      <div class="actions">
-        <button class="icon-button" id="retry" title="Retry">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
+      <div class="clariview-actions">
+        <button class="clariview-icon-button" id="clariview-retry" title="Retry">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="clariview-icon-svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
           </svg>
         </button>
-        <button class="icon-button" id="copy" title="Copy">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
+        <button class="clariview-icon-button" id="clariview-copy" title="Copy">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="clariview-icon-svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
           </svg>
         </button>
-        <select id="displayMode">
+        <select id="clariview-displayMode">
           <option value="popup">Popup</option>
           <option value="sidebar">Sidebar</option>
         </select>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab active" data-tab="summary">Summary</button>
-      <button class="tab" data-tab="chat">Chat</button>
+    <div class="clariview-tabs">
+      <button class="clariview-tab active" data-tab="clariview-summary">Summary</button>
+      <button class="clariview-tab" data-tab="clariview-chat">Chat</button>
     </div>
-    <div class="tab-content active" id="summary-tab">
-      <button id="summarize" class="primary-button">Summarize</button>
-      <div id="summary"></div>
+    <div class="clariview-tab-content active" id="clariview-summary-tab">
+      <button id="clariview-summarize" class="clariview-primary-button">Summarize</button>
+      <div id="clariview-summary"></div>
     </div>
-    <div class="tab-content" id="chat-tab">
-      <div class="chat-messages"></div>
-      <div class="chat-input">
-        <div class="chat-input-container">
-          <textarea id="chat-input" placeholder="Ask a question..." rows="1"></textarea>
-          <button id="send-chat">Send</button>
+    <div class="clariview-tab-content" id="clariview-chat-tab">
+      <div class="clariview-chat-messages"></div>
+      <div class="clariview-chat-input">
+        <div class="clariview-chat-input-container">
+          <textarea id="clariview-chat-input" placeholder="Ask a question..." rows="1"></textarea>
+          <button id="clariview-send-chat">Send</button>
         </div>
       </div>
     </div>
-    <div class="resize-handle"></div>`;
+    <div class="clariview-resize-handle"></div>`;
 
   // Add custom styles
   if (!document.getElementById('clariview-popup-style')) {
@@ -362,8 +368,12 @@ async function createPopup(selectedText = null) {
         z-index: 9999;
         font-family: system-ui, -apple-system, sans-serif;
         font-size: 16px;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 40px);
+        overflow: hidden;
       }
-      #clariview-popup .titlebar {
+      #clariview-popup .clariview-titlebar {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -371,18 +381,19 @@ async function createPopup(selectedText = null) {
         border-bottom: 1px solid #e5e7eb;
         cursor: grab;
         user-select: none;
+        flex-shrink: 0;
       }
-      #clariview-popup .titlebar span {
+      #clariview-popup .clariview-titlebar span {
         font-size: 18px;
         font-weight: 600;
         color: #111827;
       }
-      #clariview-popup .actions {
+      #clariview-popup .clariview-actions {
         display: flex;
         gap: 12px;
         align-items: center;
       }
-      #clariview-popup .icon-button {
+      #clariview-popup .clariview-icon-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -397,11 +408,11 @@ async function createPopup(selectedText = null) {
         transition: all 0.2s ease;
         margin: 0;
       }
-      #clariview-popup .icon-button:hover {
+      #clariview-popup .clariview-icon-button:hover {
         background: #f3f4f6;
         color: #111827;
       }
-      #clariview-popup .icon-button svg {
+      #clariview-popup .clariview-icon-button svg {
         width: 20px;
         height: 20px;
         display: block;
@@ -416,12 +427,12 @@ async function createPopup(selectedText = null) {
         cursor: pointer;
         background-color: white;
       }
-      #clariview-popup .tabs {
+      #clariview-popup .clariview-tabs {
         display: flex;
         padding: 0 16px;
         border-bottom: 1px solid #e5e7eb;
       }
-      #clariview-popup .tab {
+      #clariview-popup .clariview-tab {
         padding: 12px 16px;
         border: none;
         background: none;
@@ -430,43 +441,46 @@ async function createPopup(selectedText = null) {
         color: #6b7280;
         border-bottom: 2px solid transparent;
       }
-      #clariview-popup .tab.active {
+      #clariview-popup .clariview-tab.active {
         color: #3B82F6;
         border-bottom-color: #3B82F6;
         font-weight: 500;
       }
-      #clariview-popup .tab-content {
+      #clariview-popup .clariview-tab-content {
         display: none;
         padding: 16px;
         font-size: 16px;
+        flex: 1;
+        overflow: hidden;
+        flex-direction: column;
       }
-      #clariview-popup .tab-content.active {
-        display: block;
+      #clariview-popup .clariview-tab-content.active {
+        display: flex;
       }
-      #clariview-popup #summary {
+      #clariview-popup #clariview-summary {
           flex: 1;
           min-height: 0;
           overflow-y: auto;
           padding: 10px;
           margin: 0;
       }
-      #clariview-popup .chat-messages {
+      #clariview-popup .clariview-chat-messages {
         height: 300px;
         overflow-y: auto;
         padding: 16px;
         font-size: 16px;
       }
-      #clariview-popup .chat-input {
+      #clariview-popup .clariview-chat-input {
         padding: 16px;
         border-top: 1px solid #e5e7eb;
       }
-      #clariview-popup .chat-input-container {
+      #clariview-popup .clariview-chat-input-container {
         display: flex;
         gap: 8px;
         width: 100%;
         align-items: flex-start;
       }
-      #clariview-popup .chat-input textarea {
+      #clariview-popup .clariview-chat-input textarea {
         width: 70%;
         padding: 8px 12px;
         border-radius: 6px;
@@ -478,12 +492,12 @@ async function createPopup(selectedText = null) {
         overflow-y: auto;
         font-family: inherit;
       }
-      #clariview-popup .chat-input textarea:focus {
+      #clariview-popup .clariview-chat-input textarea:focus {
         outline: none;
         border-color: #3B82F6;
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
       }
-      #clariview-popup .chat-input button {
+      #clariview-popup .clariview-chat-input button {
         width: 30%;
         padding: 8px 16px;
         background: #3B82F6;
@@ -495,10 +509,10 @@ async function createPopup(selectedText = null) {
         white-space: nowrap;
         align-self: flex-start;
       }
-      #clariview-popup .chat-input button:hover {
+      #clariview-popup .clariview-chat-input button:hover {
         background: #2563EB;
       }
-      #clariview-popup .primary-button {
+      #clariview-popup .clariview-primary-button {
         width: 100%;
         padding: 12px;
         background: #3B82F6;
@@ -509,7 +523,7 @@ async function createPopup(selectedText = null) {
         font-size: 16px;
         font-weight: 500;
       }
-      #clariview-popup .primary-button:hover {
+      #clariview-popup .clariview-primary-button:hover {
         background: #2563EB;
       }
     `;
@@ -525,13 +539,13 @@ async function createPopup(selectedText = null) {
   document.body.appendChild(popup);
 
   // Handle display mode changes
-  const displayModeSelect = popup.querySelector('#displayMode');
+  const displayModeSelect = popup.querySelector('#clariview-displayMode');
   displayModeSelect.addEventListener('change', async (e) => {
     try {
       if (chrome.runtime?.id) {
         if (e.target.value === 'sidebar') {
-          const selectedText = popup.querySelector('#summary').dataset.selectedText;
-          const summaryContent = popup.querySelector('#summary').innerHTML;
+          const selectedText = popup.querySelector('#clariview-summary').dataset.selectedText;
+          const summaryContent = popup.querySelector('#clariview-summary').innerHTML;
           
           // Remove popup first
           popup.remove();
@@ -541,7 +555,7 @@ async function createPopup(selectedText = null) {
           
           // If there was content in the summary, transfer it to the sidebar
           if (summaryContent && summaryContent !== 'Summarizing...') {
-            const sidebarSummary = document.querySelector('#clariview-sidebar #summary');
+            const sidebarSummary = document.querySelector('#clariview-sidebar #clariview-summary');
             if (sidebarSummary) {
               sidebarSummary.innerHTML = summaryContent;
             }
@@ -555,7 +569,7 @@ async function createPopup(selectedText = null) {
   });
 
   // Dragging functionality
-  const titlebar = popup.querySelector('.titlebar');
+  const titlebar = popup.querySelector('.clariview-titlebar');
   let isDragging = false;
   let currentX;
   let currentY;
@@ -611,7 +625,7 @@ async function createPopup(selectedText = null) {
   }
 
   // Resizing functionality
-  const resizeHandle = popup.querySelector('.resize-handle');
+  const resizeHandle = popup.querySelector('.clariview-resize-handle');
   let isResizing = false;
   let startWidth;
   let startHeight;
@@ -665,16 +679,39 @@ async function createPopup(selectedText = null) {
   document.addEventListener('mouseup', handleResizeEnd, { capture: true });
 
   // Handle summarize button click
-  const summarizeBtn = popup.querySelector('#summarize');
+  const summarizeBtn = popup.querySelector('#clariview-summarize');
   summarizeBtn.addEventListener('click', async () => {
-    const summaryDiv = popup.querySelector('#summary');
+    const summaryDiv = popup.querySelector('#clariview-summary');
     summaryDiv.textContent = 'Summarizing...';
 
     // Get settings from storage
     chrome.storage.sync.get(
-      ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
+      [
+        'aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 
+        'language', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
+        'anthropicModel', 'deepseekKey', 'deepseekModel', 'geminiKey', 'geminiModel'
+      ],
       async function(settings) {
-        if (!settings.apiKey) {
+        let apiKey;
+        switch (settings.aiProvider) {
+          case 'openai':
+            apiKey = settings.apiKey;
+            break;
+          case 'openai-custom':
+            apiKey = settings.customApiKey;
+            break;
+          case 'anthropic':
+            apiKey = settings.anthropicKey;
+            break;
+          case 'deepseek':
+            apiKey = settings.deepseekKey;
+            break;
+          case 'gemini':
+            apiKey = settings.geminiKey;
+            break;
+        }
+
+        if (!apiKey) {
           summaryDiv.textContent = 'Please set your API key in the options page.';
           return;
         }
@@ -752,9 +789,9 @@ async function createPopup(selectedText = null) {
   });
 
   // Add button handlers
-  const retryButton = popup.querySelector('#retry');
-  const copyButton = popup.querySelector('#copy');
-  const summaryDiv = popup.querySelector('#summary');
+  const retryButton = popup.querySelector('#clariview-retry');
+  const copyButton = popup.querySelector('#clariview-copy');
+  const summaryDiv = popup.querySelector('#clariview-summary');
 
   retryButton.addEventListener('click', async () => {
     if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
@@ -769,7 +806,7 @@ async function createPopup(selectedText = null) {
         await navigator.clipboard.writeText(textToCopy);
         // Optional: Show a brief success message
         const originalHTML = copyButton.innerHTML;
-        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
+        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="clariview-icon-svg"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
         setTimeout(() => {
           copyButton.innerHTML = originalHTML;
         }, 1000);
@@ -783,7 +820,7 @@ async function createPopup(selectedText = null) {
   summaryDiv.dataset.selectedText = selectedText || '';
 
   // Handle tab switching
-  const tabs = popup.querySelectorAll('.tab');
+  const tabs = popup.querySelectorAll('.clariview-tab');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       // Update active tab
@@ -791,13 +828,13 @@ async function createPopup(selectedText = null) {
       tab.classList.add('active');
       
       // Update active content
-      const tabContents = popup.querySelectorAll('.tab-content');
+      const tabContents = popup.querySelectorAll('.clariview-tab-content');
       tabContents.forEach(content => content.classList.remove('active'));
       popup.querySelector(`#${tab.dataset.tab}-tab`).classList.add('active');
 
       // Auto-summarize when opening summary tab
-      if (tab.dataset.tab === 'summary') {
-        const summaryDiv = popup.querySelector('#summary');
+      if (tab.dataset.tab === 'clariview-summary') {
+        const summaryDiv = popup.querySelector('#clariview-summary');
         if (!summaryDiv.textContent) {
           summarizeContent();
         }
@@ -806,11 +843,12 @@ async function createPopup(selectedText = null) {
   });
 
   // Handle chat functionality
-  const chatInput = popup.querySelector('#chat-input');
-  const sendButton = popup.querySelector('#send-chat');
-  const chatMessages = popup.querySelector('.chat-messages');
+  const chatInput = popup.querySelector('#clariview-chat-input');
+  const sendButton = popup.querySelector('#clariview-send-chat');
+  const chatMessages = popup.querySelector('.clariview-chat-messages');
 
   async function sendChatMessage() {
+    const chatInput = document.querySelector('#clariview-chat-input');
     const message = chatInput.value.trim();
     if (!message) return;
 
@@ -818,13 +856,50 @@ async function createPopup(selectedText = null) {
     chatInput.value = '';
 
     chrome.storage.sync.get(
-      ['aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 'anthropicModel', 'deepseekKey', 'deepseekModel'],
+      [
+        'aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 
+        'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
+        'anthropicModel', 'deepseekKey', 'deepseekModel', 'geminiKey', 'geminiModel'
+      ],
       async function(settings) {
         try {
+          // Get the page content or selected text
+          let pageContent;
+          const summaryDiv = document.querySelector('#clariview-summary');
+          
+          if (summaryDiv?.dataset.selectedText) {
+            console.log('[Clariview] Using selected text for chat context');
+            pageContent = summaryDiv.dataset.selectedText;
+          } else if (isYouTubeVideoPage()) {
+            try {
+              console.log('[Clariview] Attempting to fetch YouTube transcript for chat context');
+              const response = await chrome.runtime.sendMessage({
+                type: 'GET_YOUTUBE_TRANSCRIPT',
+                url: window.location.href
+              });
+
+              if (response && response.transcript) {
+                console.log('[Clariview] Successfully got YouTube transcript');
+                pageContent = response.transcript;
+              } else {
+                console.log('[Clariview] No transcript available, using page content');
+                pageContent = document.body.innerText.substring(0, 4000);
+              }
+            } catch (error) {
+              console.log('[Clariview] Error fetching transcript, using page content:', error);
+              pageContent = document.body.innerText.substring(0, 4000);
+            }
+          } else {
+            pageContent = document.body.innerText.substring(0, 4000);
+          }
+
+          // Create context-aware system message
+          const contextualSystemMessage = `${settings.systemMessage}\n\nYou are analyzing the following content from ${document.title} (${window.location.href}):\n\n${pageContent}\n\nPlease answer questions about this content.`;
+
           const messages = [
             {
               role: "system",
-              content: settings.systemMessage
+              content: contextualSystemMessage
             },
             {
               role: "user",
@@ -843,9 +918,9 @@ async function createPopup(selectedText = null) {
 
   function appendChatMessage(role, content) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message';
+    messageDiv.className = 'clariview-chat-message';
     messageDiv.innerHTML = `
-      <div class="message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
+      <div class="clariview-message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
       ${marked.parse(content, { gfm: true, breaks: true, sanitize: true })}
     `;
     chatMessages.appendChild(messageDiv);
@@ -855,7 +930,7 @@ async function createPopup(selectedText = null) {
   sendButton.addEventListener('click', sendChatMessage);
 
   // Add auto-expanding textarea functionality
-  const textarea = popup.querySelector('#chat-input');
+  const textarea = popup.querySelector('#clariview-chat-input');
   textarea.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
@@ -917,43 +992,42 @@ async function createSidebar(selectedText = null) {
   const sidebar = document.createElement('div');
   sidebar.id = 'clariview-sidebar';
   sidebar.innerHTML = `
-    <div class="titlebar">
+    <div class="clariview-titlebar">
       <span>ClariView</span>
-      <div class="actions">
-        <button class="icon-button" id="retry" title="Retry">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
+      <div class="clariview-actions">
+        <button class="clariview-icon-button" id="clariview-retry" title="Retry">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
           </svg>
         </button>
-        <button class="icon-button" id="copy" title="Copy">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-5 w-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
+        <button class="clariview-icon-button" id="clariview-copy" title="Copy">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
           </svg>
         </button>
-        <select id="displayMode">
+        <select id="clariview-displayMode">
           <option value="sidebar">Sidebar</option>
           <option value="popup">Popup</option>
         </select>
       </div>
     </div>
-    <div class="tabs">
-      <button class="tab active" data-tab="summary">Summary</button>
-      <button class="tab" data-tab="chat">Chat</button>
+    <div class="clariview-tabs">
+      <button class="clariview-tab active" data-tab="clariview-summary">Summary</button>
+      <button class="clariview-tab" data-tab="clariview-chat">Chat</button>
     </div>
-    <div class="tab-content active" id="summary-tab">
-      <button id="summarize" class="primary-button">Summarize</button>
-      <div id="summary"></div>
+    <div class="clariview-tab-content active" id="clariview-summary-tab">
+      <button id="clariview-summarize" class="clariview-primary-button">Summarize</button>
+      <div id="clariview-summary"></div>
     </div>
-    <div class="tab-content" id="chat-tab">
-      <div class="chat-messages"></div>
-      <div class="chat-input">
-        <div class="chat-input-container">
-          <textarea id="chat-input" placeholder="Ask a question..." rows="1"></textarea>
-          <button id="send-chat">Send</button>
+    <div class="clariview-tab-content" id="clariview-chat-tab">
+      <div class="clariview-chat-messages"></div>
+      <div class="clariview-chat-input">
+        <div class="clariview-chat-input-container">
+          <textarea id="clariview-chat-input" placeholder="Ask a question..." rows="1"></textarea>
+          <button id="clariview-send-chat">Send</button>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 
   document.body.appendChild(sidebar);
 
@@ -978,7 +1052,7 @@ async function createSidebar(selectedText = null) {
   const toggle = document.createElement('button');
   toggle.id = 'clariview-toggle';
   toggle.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="toggle-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-toggle-icon">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
     </svg>
   `;
@@ -989,18 +1063,18 @@ async function createSidebar(selectedText = null) {
         document.body.classList.toggle('with-sidebar-collapsed');
       }
     });
-    toggle.querySelector('.toggle-icon').style.transform = isCollapsed ? 'rotate(180deg)' : '';
+    toggle.querySelector('.clariview-toggle-icon').style.transform = isCollapsed ? 'rotate(180deg)' : '';
   });
   document.body.appendChild(toggle);
 
   // Handle display mode changes
-  const displayModeSelect = sidebar.querySelector('#displayMode');
+  const displayModeSelect = sidebar.querySelector('#clariview-displayMode');
   displayModeSelect.addEventListener('change', async (e) => {
     try {
       if (chrome.runtime?.id) {
         if (e.target.value === 'popup') {
-          const selectedText = sidebar.querySelector('#summary').dataset.selectedText;
-          const summaryContent = sidebar.querySelector('#summary').innerHTML;
+          const selectedText = sidebar.querySelector('#clariview-summary').dataset.selectedText;
+          const summaryContent = sidebar.querySelector('#clariview-summary').innerHTML;
           
           // Remove sidebar first
           sidebar.remove();
@@ -1013,10 +1087,10 @@ async function createSidebar(selectedText = null) {
           
           // If there was content in the summary, transfer it to the popup
           if (summaryContent && summaryContent !== 'Summarizing...') {
-            const popupSummary = document.querySelector('#clariview-popup #summary');
+            const popupSummary = document.querySelector('#clariview-popup #clariview-summary');
             if (popupSummary) {
               popupSummary.innerHTML = summaryContent;
-              popupSummary.dataset.markdown = sidebar.querySelector('#summary').dataset.markdown || '';
+              popupSummary.dataset.markdown = sidebar.querySelector('#clariview-summary').dataset.markdown || '';
             }
           }
 
@@ -1043,10 +1117,10 @@ async function createSidebar(selectedText = null) {
   });
 
   // Add button handlers
-  const retryButton = sidebar.querySelector('#retry');
-  const copyButton = sidebar.querySelector('#copy');
-  const summaryDiv = sidebar.querySelector('#summary');
-  const summarizeBtn = sidebar.querySelector('#summarize');
+  const retryButton = sidebar.querySelector('#clariview-retry');
+  const copyButton = sidebar.querySelector('#clariview-copy');
+  const summaryDiv = sidebar.querySelector('#clariview-summary');
+  const summarizeBtn = sidebar.querySelector('#clariview-summarize');
 
   retryButton.addEventListener('click', async () => {
     if (summaryDiv.textContent && summaryDiv.textContent !== 'Summarizing...') {
@@ -1060,7 +1134,7 @@ async function createSidebar(selectedText = null) {
         const textToCopy = summaryDiv.dataset.markdown || summaryDiv.textContent;
         await navigator.clipboard.writeText(textToCopy);
         const originalHTML = copyButton.innerHTML;
-        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
+        copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="clariview-icon-svg"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path></svg>';
         setTimeout(() => {
           copyButton.innerHTML = originalHTML;
         }, 1000);
@@ -1074,7 +1148,7 @@ async function createSidebar(selectedText = null) {
   summaryDiv.dataset.selectedText = selectedText || '';
 
   // Handle tab switching
-  const tabs = sidebar.querySelectorAll('.tab');
+  const tabs = sidebar.querySelectorAll('.clariview-tab');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       // Update active tab
@@ -1082,14 +1156,14 @@ async function createSidebar(selectedText = null) {
       tab.classList.add('active');
       
       // Update active content
-      const tabContents = sidebar.querySelectorAll('.tab-content');
+      const tabContents = sidebar.querySelectorAll('.clariview-tab-content');
       tabContents.forEach(content => content.classList.remove('active'));
       sidebar.querySelector(`#${tab.dataset.tab}-tab`).classList.add('active');
     });
   });
 
   // Auto-summarize when opening summary tab
-  const summaryTab = sidebar.querySelector('[data-tab="summary"]');
+  const summaryTab = sidebar.querySelector('[data-tab="clariview-summary"]');
   summaryTab.addEventListener('click', () => {
     if (!summaryDiv.textContent) {
       summarizeContent();
@@ -1097,11 +1171,12 @@ async function createSidebar(selectedText = null) {
   });
 
   // Handle chat functionality
-  const chatInput = sidebar.querySelector('#chat-input');
-  const sendButton = sidebar.querySelector('#send-chat');
-  const chatMessages = sidebar.querySelector('.chat-messages');
+  const chatInput = sidebar.querySelector('#clariview-chat-input');
+  const sendButton = sidebar.querySelector('#clariview-send-chat');
+  const chatMessages = sidebar.querySelector('.clariview-chat-messages');
 
   async function sendChatMessage() {
+    const chatInput = document.querySelector('#clariview-chat-input');
     const message = chatInput.value.trim();
     if (!message) return;
 
@@ -1109,13 +1184,50 @@ async function createSidebar(selectedText = null) {
     chatInput.value = '';
 
     chrome.storage.sync.get(
-      ['aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 'anthropicModel', 'deepseekKey', 'deepseekModel'],
+      [
+        'aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 
+        'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
+        'anthropicModel', 'deepseekKey', 'deepseekModel', 'geminiKey', 'geminiModel'
+      ],
       async function(settings) {
         try {
+          // Get the page content or selected text
+          let pageContent;
+          const summaryDiv = document.querySelector('#clariview-summary');
+          
+          if (summaryDiv?.dataset.selectedText) {
+            console.log('[Clariview] Using selected text for chat context');
+            pageContent = summaryDiv.dataset.selectedText;
+          } else if (isYouTubeVideoPage()) {
+            try {
+              console.log('[Clariview] Attempting to fetch YouTube transcript for chat context');
+              const response = await chrome.runtime.sendMessage({
+                type: 'GET_YOUTUBE_TRANSCRIPT',
+                url: window.location.href
+              });
+
+              if (response && response.transcript) {
+                console.log('[Clariview] Successfully got YouTube transcript');
+                pageContent = response.transcript;
+              } else {
+                console.log('[Clariview] No transcript available, using page content');
+                pageContent = document.body.innerText.substring(0, 4000);
+              }
+            } catch (error) {
+              console.log('[Clariview] Error fetching transcript, using page content:', error);
+              pageContent = document.body.innerText.substring(0, 4000);
+            }
+          } else {
+            pageContent = document.body.innerText.substring(0, 4000);
+          }
+
+          // Create context-aware system message
+          const contextualSystemMessage = `${settings.systemMessage}\n\nYou are analyzing the following content from ${document.title} (${window.location.href}):\n\n${pageContent}\n\nPlease answer questions about this content.`;
+
           const messages = [
             {
               role: "system",
-              content: settings.systemMessage
+              content: contextualSystemMessage
             },
             {
               role: "user",
@@ -1134,9 +1246,9 @@ async function createSidebar(selectedText = null) {
 
   function appendChatMessage(role, content) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message';
+    messageDiv.className = 'clariview-chat-message';
     messageDiv.innerHTML = `
-      <div class="message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
+      <div class="clariview-message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
       ${marked.parse(content, { gfm: true, breaks: true, sanitize: true })}
     `;
     chatMessages.appendChild(messageDiv);
@@ -1146,7 +1258,7 @@ async function createSidebar(selectedText = null) {
   sendButton.addEventListener('click', sendChatMessage);
 
   // Add auto-expanding textarea functionality
-  const textarea = sidebar.querySelector('#chat-input');
+  const textarea = sidebar.querySelector('#clariview-chat-input');
   textarea.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
@@ -1184,7 +1296,7 @@ async function createSidebar(selectedText = null) {
 
   // Handle summarize button click
   summarizeBtn.addEventListener('click', async () => {
-    const summaryDiv = sidebar.querySelector('#summary');
+    const summaryDiv = sidebar.querySelector('#clariview-summary');
     summaryDiv.textContent = 'Summarizing...';
 
     try {
@@ -1194,7 +1306,11 @@ async function createSidebar(selectedText = null) {
 
       // Get settings from storage
       chrome.storage.sync.get(
-        ['aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 'language'],
+        [
+          'aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 
+          'language', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
+          'anthropicModel', 'deepseekKey', 'deepseekModel', 'geminiKey', 'geminiModel'
+        ],
         async function(settings) {
           if (chrome.runtime?.lastError) {
             console.error('[Clariview] Storage error:', chrome.runtime.lastError);
@@ -1202,7 +1318,26 @@ async function createSidebar(selectedText = null) {
             return;
           }
 
-          if (!settings.apiKey) {
+          let apiKey;
+          switch (settings.aiProvider) {
+            case 'openai':
+              apiKey = settings.apiKey;
+              break;
+            case 'openai-custom':
+              apiKey = settings.customApiKey;
+              break;
+            case 'anthropic':
+              apiKey = settings.anthropicKey;
+              break;
+            case 'deepseek':
+              apiKey = settings.deepseekKey;
+              break;
+            case 'gemini':
+              apiKey = settings.geminiKey;
+              break;
+          }
+
+          if (!apiKey) {
             summaryDiv.textContent = 'Please set your API key in the options page.';
             return;
           }
@@ -1317,7 +1452,7 @@ document.addEventListener('create-clariview-popup', async (event) => {
     if (selectedText || data.autoSummarize) {
       const popup = document.getElementById('clariview-popup');
       if (popup) {
-        popup.querySelector('#summarize').click();
+        popup.querySelector('#clariview-summarize').click();
       }
     }
   });
@@ -1334,6 +1469,8 @@ async function callLLMApi(settings, messages) {
       return await callAnthropic(settings, messages);
     case 'deepseek':
       return await callDeepSeek(settings, messages);
+    case 'gemini':
+      return await callGemini(settings, messages);
     default:
       throw new Error('Unsupported AI provider');
   }
@@ -1432,9 +1569,103 @@ async function callDeepSeek(settings, messages) {
   return data.choices[0].message.content;
 }
 
+async function callGemini(settings, messages) {
+  const systemMessage = messages.find(m => m.role === 'system')?.content || '';
+  const userMessage = messages.find(m => m.role === 'user')?.content || '';
+  
+  // Combine system and user messages for Gemini
+  const combinedMessage = `${systemMessage}\n\n${userMessage}`;
+  
+  // Construct the correct API endpoint
+  const modelName = settings.geminiModel || 'gemini-2.0-flash';
+  const endpoint = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${settings.geminiKey}`;
+  
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: combinedMessage
+          }]
+        }],
+        generationConfig: {
+          maxOutputTokens: parseInt(settings.maxTokens),
+          temperature: 0.7,
+          topP: 0.8,
+          topK: 40,
+          stopSequences: []
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_NONE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_NONE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_NONE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_NONE"
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Clariview] Gemini API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorText,
+        endpoint,
+        modelName
+      });
+      throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      console.error('[Clariview] Failed to parse Gemini response:', error);
+      throw new Error('Invalid response from Gemini API');
+    }
+    
+    if (data.error) {
+      console.error('[Clariview] Gemini API returned error:', data.error);
+      throw new Error(data.error.message || 'Unknown error from Gemini API');
+    }
+
+    if (!data.candidates || data.candidates.length === 0) {
+      console.error('[Clariview] No candidates in Gemini response:', data);
+      throw new Error('No response generated by Gemini');
+    }
+
+    const candidate = data.candidates[0];
+    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+      console.error('[Clariview] Invalid candidate structure:', candidate);
+      throw new Error('Invalid response structure from Gemini');
+    }
+
+    return candidate.content.parts[0].text;
+  } catch (error) {
+    console.error('[Clariview] Error in Gemini API call:', error);
+    throw error;
+  }
+}
+
 // Update the summarize function to use the new API call function
 async function summarizeContent() {
-  const summaryDiv = document.querySelector('#summary');
+  const summaryDiv = document.querySelector('#clariview-summary');
   summaryDiv.textContent = 'Summarizing...';
 
   // Get settings from storage
@@ -1442,7 +1673,7 @@ async function summarizeContent() {
     [
       'aiProvider', 'apiKey', 'systemMessage', 'userPrompt', 'model', 'maxTokens', 
       'language', 'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
-      'anthropicModel', 'deepseekKey', 'deepseekModel'
+      'anthropicModel', 'deepseekKey', 'deepseekModel', 'geminiKey', 'geminiModel'
     ],
     async function(settings) {
       // Check for required API key based on provider
@@ -1459,6 +1690,9 @@ async function summarizeContent() {
           break;
         case 'deepseek':
           apiKey = settings.deepseekKey;
+          break;
+        case 'gemini':
+          apiKey = settings.geminiKey;
           break;
       }
 
@@ -1539,43 +1773,6 @@ async function summarizeContent() {
   );
 }
 
-// Update the chat message sending function to use the new API call function
-async function sendChatMessage() {
-  const chatInput = document.querySelector('#chat-input');
-  const message = chatInput.value.trim();
-  if (!message) return;
-
-  appendChatMessage('user', message);
-  chatInput.value = '';
-
-  chrome.storage.sync.get(
-    [
-      'aiProvider', 'apiKey', 'systemMessage', 'model', 'maxTokens', 
-      'customEndpoint', 'customApiKey', 'customModel', 'anthropicKey', 
-      'anthropicModel', 'deepseekKey', 'deepseekModel'
-    ],
-    async function(settings) {
-      try {
-        const messages = [
-          {
-            role: "system",
-            content: settings.systemMessage
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ];
-
-        const response = await callLLMApi(settings, messages);
-        appendChatMessage('assistant', response);
-      } catch (error) {
-        appendChatMessage('assistant', `Error: ${error.message}`);
-      }
-    }
-  );
-}
-
 // Create and handle sidebar
 document.addEventListener('create-clariview-sidebar', async () => {
   // First inject the sidebar CSS
@@ -1604,21 +1801,21 @@ document.addEventListener('create-clariview-sidebar', async () => {
   
   // Create titlebar
   const titlebar = document.createElement('div');
-  titlebar.className = 'titlebar';
+  titlebar.className = 'clariview-titlebar';
   titlebar.innerHTML = `
     <span>ClariView</span>
-    <div class="actions">
-      <button class="icon-button" id="retry" title="Retry">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+    <div class="clariview-actions">
+      <button class="clariview-icon-button" id="clariview-retry" title="Retry">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
         </svg>
       </button>
-      <button class="icon-button" id="copy" title="Copy">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+      <button class="clariview-icon-button" id="clariview-copy" title="Copy">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
         </svg>
       </button>
-      <select id="displayMode">
+      <select id="clariview-displayMode">
         <option value="sidebar">Sidebar</option>
         <option value="popup">Popup</option>
       </select>
@@ -1627,27 +1824,26 @@ document.addEventListener('create-clariview-sidebar', async () => {
 
   // Create content area
   const content = document.createElement('div');
-  content.className = 'content';
+  content.className = 'clariview-content';
   content.innerHTML = `
-    <div class="tabs">
-      <button class="tab active" data-tab="summary">Summary</button>
-      <button class="tab" data-tab="chat">Chat</button>
+    <div class="clariview-tabs">
+      <button class="clariview-tab active" data-tab="clariview-summary">Summary</button>
+      <button class="clariview-tab" data-tab="clariview-chat">Chat</button>
     </div>
-    <div class="tab-content active" id="summary-tab">
-      <textarea id="input" placeholder="Enter text to analyze..."></textarea>
-      <button id="summarize" class="primary-button">Summarize</button>
-      <div id="summary"></div>
+    <div class="clariview-tab-content active" id="clariview-summary-tab">
+      <textarea id="clariview-input" placeholder="Enter text to analyze..."></textarea>
+      <button id="clariview-summarize" class="clariview-primary-button">Summarize</button>
+      <div id="clariview-summary"></div>
     </div>
-    <div class="tab-content" id="chat-tab">
-      <div class="chat-messages"></div>
-      <div class="chat-input">
-        <div class="chat-input-container">
-          <textarea id="chat-input" placeholder="Ask a question..." rows="1"></textarea>
-          <button id="send-chat">Send</button>
+    <div class="clariview-tab-content" id="clariview-chat-tab">
+      <div class="clariview-chat-messages"></div>
+      <div class="clariview-chat-input">
+        <div class="clariview-chat-input-container">
+          <textarea id="clariview-chat-input" placeholder="Ask a question..." rows="1"></textarea>
+          <button id="clariview-send-chat">Send</button>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 
   // Assemble sidebar
   sidebar.appendChild(titlebar);
@@ -1658,8 +1854,8 @@ document.addEventListener('create-clariview-sidebar', async () => {
   const toggle = document.createElement('button');
   toggle.id = 'clariview-toggle';
   toggle.innerHTML = `
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M15 18l-6-6 6-6" />
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-toggle-icon">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
     </svg>
   `;
 

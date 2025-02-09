@@ -39,7 +39,7 @@
   box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
-#clariview-toggle .toggle-icon {
+#clariview-toggle .clariview-toggle-icon {
   width: 20px;
   height: 20px;
   stroke: #666;
@@ -54,7 +54,7 @@
   right: 0;
 }
 
-#clariview-sidebar .titlebar {
+#clariview-sidebar .clariview-titlebar {
   margin: -10px -10px 10px -10px;
   padding: 8px;
   background: #f0f0f0;
@@ -63,9 +63,10 @@
   justify-content: space-between;
   align-items: center;
   user-select: none;
+  flex-shrink: 0;
 }
 
-#clariview-sidebar .content {
+#clariview-sidebar .clariview-content {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -131,7 +132,7 @@
   background: #2563EB;
 }
 
-#clariview-sidebar .tabs {
+#clariview-sidebar .clariview-tabs {
   display: flex;
   padding: 0;
   border-bottom: 1px solid #e5e7eb;
@@ -142,7 +143,7 @@
   z-index: 1;
 }
 
-#clariview-sidebar .tab-content {
+#clariview-sidebar .clariview-tab-content {
   display: none;
   flex: 1;
   min-height: 0;
@@ -150,12 +151,12 @@
   padding: 10px;
 }
 
-#clariview-sidebar .tab-content.active {
+#clariview-sidebar .clariview-tab-content.active {
   display: flex;
   flex-direction: column;
 }
 
-#clariview-sidebar #chat-tab {
+#clariview-sidebar #clariview-chat-tab {
   display: none;
   flex: 1;
   min-height: 0;
@@ -163,11 +164,11 @@
   flex-direction: column;
 }
 
-#clariview-sidebar #chat-tab.active {
+#clariview-sidebar #clariview-chat-tab.active {
   display: flex;
 }
 
-#clariview-sidebar .chat-messages {
+#clariview-sidebar .clariview-chat-messages {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -175,33 +176,33 @@
   margin: 0;
 }
 
-#clariview-sidebar .chat-input {
+#clariview-sidebar .clariview-chat-input {
   padding: 10px;
   background: white;
   border-top: 1px solid #e5e7eb;
   margin: 0;
 }
 
-#clariview-sidebar .chat-input-container {
+#clariview-sidebar .clariview-chat-input-container {
   display: flex;
   gap: 8px;
 }
 
-#clariview-sidebar .chat-input textarea {
+#clariview-sidebar .clariview-chat-input textarea {
   flex: 1;
   min-height: unset;
   margin: 0;
   resize: none;
 }
 
-#clariview-sidebar .chat-input button {
+#clariview-sidebar .clariview-chat-input button {
   width: auto;
   margin: 0;
   white-space: nowrap;
   padding: 8px 16px;
 }
 
-#clariview-sidebar #summary-tab {
+#clariview-sidebar #clariview-summary-tab {
   display: none;
   flex-direction: column;
   flex: 1;
@@ -209,11 +210,11 @@
   overflow: hidden;
 }
 
-#clariview-sidebar #summary-tab.active {
+#clariview-sidebar #clariview-summary-tab.active {
   display: flex;
 }
 
-#clariview-sidebar #summary {
+#clariview-sidebar #clariview-summary {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -232,44 +233,44 @@
   border-radius: 6px;
 }
 
-#clariview-sidebar #summary h1,
-#clariview-sidebar #summary h2,
-#clariview-sidebar #summary h3,
-#clariview-sidebar #summary h4 {
+#clariview-sidebar #clariview-summary h1,
+#clariview-sidebar #clariview-summary h2,
+#clariview-sidebar #clariview-summary h3,
+#clariview-sidebar #clariview-summary h4 {
   margin-top: 0.7em;
   margin-bottom: 0.3em;
   font-weight: 600;
 }
 
-#clariview-sidebar #summary p {
+#clariview-sidebar #clariview-summary p {
   margin: 0.3em 0;
 }
 
-#clariview-sidebar #summary ul,
-#clariview-sidebar #summary ol {
+#clariview-sidebar #clariview-summary ul,
+#clariview-sidebar #clariview-summary ol {
   margin: 0.3em 0;
   padding-left: 2em;
 }
 
-#clariview-sidebar #summary li {
+#clariview-sidebar #clariview-summary li {
   margin: 0.1em 0;
 }
 
-#clariview-sidebar #summary code {
+#clariview-sidebar #clariview-summary code {
   background: #f0f0f0;
   padding: 0.2em 0.4em;
   border-radius: 3px;
   font-family: monospace;
 }
 
-#clariview-sidebar #summary pre {
+#clariview-sidebar #clariview-summary pre {
   background: #f0f0f0;
   padding: 1em;
   border-radius: 3px;
   overflow-x: auto;
 }
 
-#clariview-sidebar #summary blockquote {
+#clariview-sidebar #clariview-summary blockquote {
   margin: 0.5em 0;
   padding-left: 1em;
   border-left: 3px solid #ddd;
@@ -287,89 +288,131 @@ body.with-sidebar-collapsed {
 }
 
 /* Primary button style */
-#clariview-sidebar .primary-button,
-#clariview-sidebar #summarize {
-  width: 100%;
-  padding: 12px;
-  background: #3B82F6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  display: block;
-  margin: 10px 0;
-}
-#clariview-sidebar #send-chat {
-  padding: 12px;
-  background: #3B82F6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  display: block;
-  margin: 10px 0;
+#clariview-sidebar button.clariview-primary-button,
+#clariview-sidebar #clariview-summarize,
+#clariview-sidebar #clariview-send-chat {
+  padding: 12px !important;
+  background: #3B82F6 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  display: block !important;
+  margin: 10px 0 !important;
+  width: 100% !important;
+  line-height: normal !important;
+  text-align: center !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  font-family: inherit !important;
 }
 
-#clariview-sidebar .primary-button:hover,
-#clariview-sidebar #summarize:hover {
-  background: #2563EB;
+#clariview-sidebar button.clariview-primary-button:hover,
+#clariview-sidebar #clariview-summarize:hover,
+#clariview-sidebar #clariview-send-chat:hover {
+  background: #2563EB !important;
 }
 
-#clariview-sidebar .actions {
+#clariview-sidebar .clariview-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#clariview-sidebar .icon-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 6px;
-  color: #6b7280;
-  transition: all 0.2s ease;
-  margin: 0;
+#clariview-sidebar .clariview-icon-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px !important;
+  width: 36px !important;
+  height: 36px !important;
+  border: none !important;
+  background: none !important;
+  cursor: pointer !important;
+  border-radius: 6px !important;
+  color: #6b7280 !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+  min-width: unset !important;
+  line-height: normal !important;
+  box-shadow: none !important;
+  text-transform: none !important;
 }
 
-#clariview-sidebar .icon-button:hover {
-  background: rgba(0, 0, 0, 0.1);
+#clariview-sidebar .clariview-icon-button:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
 }
 
-#clariview-sidebar .icon-button svg {
+#clariview-sidebar .clariview-icon-button svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke: currentColor !important;
+  min-width: unset !important;
+  min-height: unset !important;
+}
+
+#clariview-sidebar .clariview-tab {
+  padding: 10px 16px !important;
+  background: white !important;
+  color: #6b7280 !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+  font-weight: 500 !important;
+  line-height: normal !important;
+  text-align: center !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  min-width: unset !important;
+  min-height: unset !important;
+}
+
+#clariview-sidebar .clariview-tab:hover {
+  color: #3B82F6 !important;
+}
+
+#clariview-sidebar .clariview-tab.active {
+  color: #3B82F6 !important;
+  border-bottom: 2px solid #3B82F6 !important;
+  background: white !important;
+}
+
+#clariview-sidebar .clariview-chat-message {
+  margin-bottom: 1em;
+  padding: 0.5em;
+  background: #f8fafc;
+  border-radius: 0.5em;
+}
+
+#clariview-sidebar .clariview-message-role {
+  font-weight: 600;
+  color: #3B82F6;
+  margin-bottom: 0.5em;
+}
+
+#clariview-sidebar .clariview-icon-svg {
   width: 16px;
   height: 16px;
   stroke: currentColor;
 }
 
-#clariview-sidebar .tab {
-  padding: 10px 16px;
-  background: white;
-  color: #6b7280;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
-  margin: 0;
-  font-weight: 500;
+#clariview-sidebar .clariview-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: clariview-spin 1s linear infinite;
+  margin-right: 8px;
 }
 
-#clariview-sidebar .tab:hover {
-  color: #3B82F6;
-}
-
-#clariview-sidebar .tab.active {
-  color: #3B82F6;
-  border-bottom: 2px solid #3B82F6;
-  background: white;
+@keyframes clariview-spin {
+  to {
+    transform: rotate(360deg);
+  }
 } 

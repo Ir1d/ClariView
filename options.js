@@ -30,6 +30,11 @@ const PROVIDER_CONFIGS = {
     settingsId: 'deepseekSettings',
     defaultModel: 'deepseek-chat',
     apiEndpoint: ''
+  },
+  gemini: {
+    settingsId: 'geminiSettings',
+    defaultModel: 'gemini-2.0-flash',
+    apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models'
   }
 };
 
@@ -53,7 +58,9 @@ function saveOptions() {
       anthropicKey: document.getElementById('anthropicKey').value,
       anthropicModel: document.getElementById('anthropicModel').value,
       deepseekKey: document.getElementById('deepseekKey').value,
-      deepseekModel: document.getElementById('deepseekModel').value
+      deepseekModel: document.getElementById('deepseekModel').value,
+      geminiKey: document.getElementById('geminiKey').value,
+      geminiModel: document.getElementById('geminiModel').value
     },
     function() {
       status.textContent = 'Options saved.';
@@ -83,7 +90,9 @@ function restoreOptions() {
       anthropicKey: '',
       anthropicModel: 'claude-3-opus-20240229',
       deepseekKey: '',
-      deepseekModel: 'deepseek-chat'
+      deepseekModel: 'deepseek-chat',
+      geminiKey: '',
+      geminiModel: 'gemini-1.0-pro'
     },
     function(items) {
       document.getElementById('aiProvider').value = items.aiProvider;
@@ -102,6 +111,8 @@ function restoreOptions() {
       document.getElementById('anthropicModel').value = items.anthropicModel;
       document.getElementById('deepseekKey').value = items.deepseekKey;
       document.getElementById('deepseekModel').value = items.deepseekModel;
+      document.getElementById('geminiKey').value = items.geminiKey;
+      document.getElementById('geminiModel').value = items.geminiModel;
       updateProviderFields();
     }
   );
