@@ -1,3 +1,18 @@
+// Add state management at the top of the file
+if (typeof window.clariviewState === 'undefined') {
+  window.clariviewState = {
+    summary: {
+      content: '',
+      markdown: '',
+      selectedText: ''
+    },
+    chat: {
+      messages: []
+    },
+    activeTab: 'clariview-summary'
+  };
+}
+
 // Function to check if we're on a YouTube video page
 function isYouTubeVideoPage() {
   return window.location.hostname === 'www.youtube.com' && 
@@ -231,36 +246,46 @@ async function loadStyles() {
   }
 
   try {
+    // Check if Chrome extension context is available
+    if (!chrome?.runtime?.id) {
+      console.warn('[Clariview] Chrome extension context not available');
+      return;
+    }
+
     // First try to use the content_scripts CSS which should be auto-injected
     const existingStyles = document.querySelector('link[href*="content-styles.css"]');
     if (existingStyles) {
+      console.log('[Clariview] Using existing content-styles.css');
       return;
     }
 
     // Fallback: manually load the CSS
-    const url = chrome.runtime.getURL('content-styles.css');
-    const link = document.createElement('link');
-    link.id = styleId;
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    link.href = url;
-    
-    // Add load event listener
-    link.addEventListener('load', () => {
-      console.log('[Clariview] Styles loaded successfully');
-    });
-    
-    // Add error event listener
-    link.addEventListener('error', (error) => {
-      console.error('[Clariview] Failed to load styles:', error);
-      // Fallback to inline styles if needed
-      applyFallbackStyles();
-    });
+    try {
+      const url = chrome.runtime.getURL('content-styles.css');
+      const link = document.createElement('link');
+      link.id = styleId;
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = url;
+      
+      // Add load event listener
+      link.addEventListener('load', () => {
+        console.log('[Clariview] Styles loaded successfully');
+      });
+      
+      // Add error event listener
+      link.addEventListener('error', (error) => {
+        console.error('[Clariview] Failed to load styles:', error);
+        applyFallbackStyles();
+      });
 
-    document.head.appendChild(link);
+      document.head.appendChild(link);
+    } catch (urlError) {
+      console.error('[Clariview] Error getting URL for content-styles.css:', urlError);
+      applyFallbackStyles();
+    }
   } catch (error) {
     console.error('[Clariview] Error in loadStyles:', error);
-    // Fallback to inline styles if needed
     applyFallbackStyles();
   }
 }
@@ -296,8 +321,90 @@ function applyFallbackStyles() {
       opacity: 0.85 !important;
       background-color: #2563EB !important;
     }
+
+    /* Chat message styles */
+    .clariview-chat-message {
+      margin-bottom: 16px !important;
+      padding: 12px 16px !important;
+      border-radius: 8px !important;
+      max-width: 85% !important;
+      position: relative !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+    }
+
+    .clariview-message-role {
+      font-weight: 600 !important;
+      margin-bottom: 4px !important;
+      font-size: 13px !important;
+    }
+
+    /* User message styles */
+    .clariview-chat-message[data-role="user"] {
+      margin-left: auto !important;
+      background-color: #3B82F6 !important;
+      color: white !important;
+      border-bottom-right-radius: 4px !important;
+    }
+
+    .clariview-chat-message[data-role="user"] .clariview-message-role {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    /* Assistant message styles */
+    .clariview-chat-message[data-role="assistant"] {
+      margin-right: auto !important;
+      background-color: #F3F4F6 !important;
+      color: #1F2937 !important;
+      border-bottom-left-radius: 4px !important;
+    }
+
+    .clariview-chat-message[data-role="assistant"] .clariview-message-role {
+      color: #4B5563 !important;
+    }
+
+    /* Chat messages container */
+    .clariview-chat-messages {
+      padding: 16px !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 16px !important;
+    }
+
+    /* Style markdown content within messages */
+    .clariview-chat-message p {
+      margin: 0 0 8px 0 !important;
+    }
+
+    .clariview-chat-message p:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    .clariview-chat-message pre {
+      background-color: rgba(0, 0, 0, 0.05) !important;
+      padding: 8px !important;
+      border-radius: 4px !important;
+      overflow-x: auto !important;
+      margin: 8px 0 !important;
+    }
+
+    .clariview-chat-message code {
+      font-family: monospace !important;
+      font-size: 13px !important;
+    }
+
+    /* Adjust code block colors for user messages */
+    .clariview-chat-message[data-role="user"] pre {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .clariview-chat-message[data-role="user"] code {
+      color: white !important;
+    }
   `;
   document.head.appendChild(style);
+  console.log('[Clariview] Applied fallback styles');
 }
 
 async function createPopup(selectedText = null) {
@@ -317,12 +424,12 @@ async function createPopup(selectedText = null) {
       <span>ClariView</span>
       <div class="clariview-actions">
         <button class="clariview-icon-button" id="clariview-retry" title="Retry">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="clariview-icon-svg">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
           </svg>
         </button>
         <button class="clariview-icon-button" id="clariview-copy" title="Copy">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="clariview-icon-svg">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
           </svg>
         </button>
@@ -330,6 +437,11 @@ async function createPopup(selectedText = null) {
           <option value="popup">Popup</option>
           <option value="sidebar">Sidebar</option>
         </select>
+        <button class="clariview-icon-button" id="clariview-close" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
     <div class="clariview-tabs">
@@ -426,6 +538,10 @@ async function createPopup(selectedText = null) {
         font-size: 14px;
         cursor: pointer;
         background-color: white;
+        min-width: 100px;
+        color: #111827;
+        font-family: inherit;
+        appearance: auto;
       }
       #clariview-popup .clariview-tabs {
         display: flex;
@@ -919,12 +1035,16 @@ async function createPopup(selectedText = null) {
   function appendChatMessage(role, content) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'clariview-chat-message';
+    messageDiv.setAttribute('data-role', role);
     messageDiv.innerHTML = `
       <div class="clariview-message-role">${role === 'user' ? 'You' : 'Assistant'}</div>
       ${marked.parse(content, { gfm: true, breaks: true, sanitize: true })}
     `;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    const chatMessages = document.querySelector('.clariview-chat-messages');
+    if (chatMessages) {
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
   }
 
   sendButton.addEventListener('click', sendChatMessage);
@@ -965,6 +1085,12 @@ async function createPopup(selectedText = null) {
     console.error('[Clariview] Error in auto-summarize:', error);
     cleanup(); // Clean up any existing elements
   }
+
+  // Add event handler after creating popup/sidebar
+  const closeButton = popup.querySelector('#clariview-close');
+  closeButton.addEventListener('click', () => {
+    cleanup();
+  });
 }
 
 async function createSidebar(selectedText = null) {
@@ -997,18 +1123,23 @@ async function createSidebar(selectedText = null) {
       <div class="clariview-actions">
         <button class="clariview-icon-button" id="clariview-retry" title="Retry">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
           </svg>
         </button>
         <button class="clariview-icon-button" id="clariview-copy" title="Copy">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z"></path>
           </svg>
         </button>
         <select id="clariview-displayMode">
           <option value="sidebar">Sidebar</option>
           <option value="popup">Popup</option>
         </select>
+        <button class="clariview-icon-button" id="clariview-close" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
     <div class="clariview-tabs">
@@ -1027,7 +1158,8 @@ async function createSidebar(selectedText = null) {
           <button id="clariview-send-chat">Send</button>
         </div>
       </div>
-    </div>`;
+    </div>
+    <div class="clariview-resize-handle"></div>`;
 
   document.body.appendChild(sidebar);
 
@@ -1418,10 +1550,39 @@ async function createSidebar(selectedText = null) {
       cleanup();
     }
   });
+
+  // Add event handler after creating popup/sidebar
+  const closeButton = sidebar.querySelector('#clariview-close');
+  closeButton.addEventListener('click', () => {
+    cleanup();
+  });
 }
 
 // Clean up function to remove styles when extension is not in use
 function cleanup() {
+  // Store summary state
+  const summaryDiv = document.querySelector('#clariview-summary');
+  if (summaryDiv) {
+    window.clariviewState.summary.content = summaryDiv.innerHTML;
+    window.clariviewState.summary.markdown = summaryDiv.dataset.markdown || '';
+    window.clariviewState.summary.selectedText = summaryDiv.dataset.selectedText || '';
+  }
+
+  // Store chat messages
+  const chatMessages = document.querySelector('.clariview-chat-messages');
+  if (chatMessages) {
+    window.clariviewState.chat.messages = Array.from(chatMessages.children).map(msg => ({
+      html: msg.innerHTML,
+      className: msg.className
+    }));
+  }
+
+  // Store active tab
+  const activeTab = document.querySelector('.clariview-tab.active');
+  if (activeTab) {
+    window.clariviewState.activeTab = activeTab.dataset.tab;
+  }
+
   const styleElement = document.getElementById('clariview-styles');
   if (styleElement) {
     styleElement.remove();
@@ -1442,20 +1603,92 @@ function cleanup() {
   document.body.classList.remove('with-sidebar', 'with-sidebar-collapsed');
 }
 
-// Only listen for the create event
-document.addEventListener('create-clariview-popup', async (event) => {
-  cleanup(); // Clean up any existing elements first
-  const selectedText = event.detail?.selectedText;
-  await createPopup(selectedText);
-  // Check for auto-summarize setting or selected text
-  chrome.storage.sync.get(['autoSummarize'], function(data) {
-    if (selectedText || data.autoSummarize) {
-      const popup = document.getElementById('clariview-popup');
-      if (popup) {
-        popup.querySelector('#clariview-summarize').click();
-      }
+// Update createPopup and createSidebar to restore state
+async function restoreState(container) {
+  // Restore summary content if exists
+  if (window.clariviewState.summary.content) {
+    const summaryDiv = container.querySelector('#clariview-summary');
+    if (summaryDiv) {
+      summaryDiv.innerHTML = window.clariviewState.summary.content;
+      summaryDiv.dataset.markdown = window.clariviewState.summary.markdown;
+      summaryDiv.dataset.selectedText = window.clariviewState.summary.selectedText;
+    }
+  }
+
+  // Restore chat messages if exist
+  if (window.clariviewState.chat.messages.length > 0) {
+    const chatMessages = container.querySelector('.clariview-chat-messages');
+    if (chatMessages) {
+      window.clariviewState.chat.messages.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = msg.className;
+        msgDiv.innerHTML = msg.html;
+        chatMessages.appendChild(msgDiv);
+      });
+    }
+  }
+
+  // Restore active tab
+  const tabs = container.querySelectorAll('.clariview-tab');
+  const tabContents = container.querySelectorAll('.clariview-tab-content');
+  tabs.forEach(tab => {
+    if (tab.dataset.tab === window.clariviewState.activeTab) {
+      tab.classList.add('active');
+      container.querySelector(`#${tab.dataset.tab}-tab`).classList.add('active');
+    } else {
+      tab.classList.remove('active');
+      container.querySelector(`#${tab.dataset.tab}-tab`).classList.remove('active');
     }
   });
+}
+
+// Update the event listeners
+document.addEventListener('create-clariview-popup', async (event) => {
+  const existingPopup = document.getElementById('clariview-popup');
+  const existingSidebar = document.getElementById('clariview-sidebar');
+  
+  // If either exists, clean up and return
+  if (existingPopup || existingSidebar) {
+    cleanup();
+    return;
+  }
+
+  const selectedText = event.detail?.selectedText;
+  await createPopup(selectedText);
+  
+  // Restore previous state if exists
+  const popup = document.getElementById('clariview-popup');
+  if (popup) {
+    await restoreState(popup);
+    
+    // Only auto-summarize if there's no previous content
+    if (!window.clariviewState.summary.content) {
+      chrome.storage.sync.get(['autoSummarize'], function(data) {
+        if (selectedText || data.autoSummarize) {
+          popup.querySelector('#clariview-summarize').click();
+        }
+      });
+    }
+  }
+});
+
+document.addEventListener('create-clariview-sidebar', async () => {
+  const existingPopup = document.getElementById('clariview-popup');
+  const existingSidebar = document.getElementById('clariview-sidebar');
+  
+  // If either exists, clean up and return
+  if (existingPopup || existingSidebar) {
+    cleanup();
+    return;
+  }
+
+  await createSidebar();
+  
+  // Restore previous state if exists
+  const sidebar = document.getElementById('clariview-sidebar');
+  if (sidebar) {
+    await restoreState(sidebar);
+  }
 });
 
 // Function to make API calls to different LLM providers
@@ -1819,6 +2052,11 @@ document.addEventListener('create-clariview-sidebar', async () => {
         <option value="sidebar">Sidebar</option>
         <option value="popup">Popup</option>
       </select>
+      <button class="clariview-icon-button" id="clariview-close" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="clariview-icon-svg">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   `;
 
